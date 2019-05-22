@@ -74,7 +74,12 @@ Es posible transcodificar videos Hap con ffmpeg. En macOS es posible instalar ff
 
 * Para instrucciones más detalladas en inglés: https://gist.github.com/dlublin/e4585b872dd136ae88b2aa51a6a89aac
 
-### Recursos Externos y Bibliografía seleccionada
+## Referencias y recursos de interés
+
+
+[Fluxus](http://www.pawfal.org/fluxus/)
+
+[Tutorial en Español de Fluxus por Luis Navarro](https://sites.google.com/site/tallerdeaudio/herramientas/fluxus)
 
 [A free, shared visual playground in the browser: Olivia Jack talks Hydra](http://cdm.link/2019/02/hydra-olivia-jack/)
 
@@ -85,6 +90,10 @@ Es posible transcodificar videos Hap con ffmpeg. En macOS es posible instalar ff
 [Estuary](http://intramuros.mcmaster.ca:8002/)
 
 [Bellacode: localized textual interfaces for live coding music. Luis N. Del Angel, Marianne Teixido, Emilio Ocelotl, Ivanka Cotrina y David Ogborn](https://iclc.livecodenetwork.org/2019/papers/paper111.pdf)
+
+[Live Coding en México por Hernani Villaseñor](http://www.hernanivillasenor.com/archivos/html/livecoding.html)
+
+[Live coding en México: una revisión a partir del concierto “A la escucha del código fuente” por Hernani Villaseñor](https://laorejainculta.net/2019/03/18/live-coding-en-mexico-una-revision-a-partir-del-concierto-a-la-escucha-del-codigo-fuente/)
 
 [Fuck off Google, en A Nuestros Amigos. Comité Invisible](http://mexico.indymedia.org/IMG/pdf/a_nuestros_amigos_-_comite_invisible.pdf)
 

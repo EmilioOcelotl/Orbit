@@ -343,7 +343,7 @@ oscSender + dirección + puerto + tag + mensaje1 + mensaje2 + mensaje3
 
 ------ Recepción de mensajes OSC -------
 
-
+Nativamente, 
 
 ------ Secuencias hacia y desde SC ------
 

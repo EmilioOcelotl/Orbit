@@ -11,22 +11,12 @@ void ofApp::setup() {
   ofSetFrameRate(30);
   ofBackground(0);
   
-  // let's see what's going on inside
-  ofSetLogLevel("ofxGLEditor", OF_LOG_VERBOSE);
-	
-  // setup the global editor font before you do anything!
+  ofSetLogLevel("ofxGLEditor", OF_LOG_VERBOSE);	
   ofxEditor::loadFont("fonts/PrintChar21.ttf", 24);
-  
-  // set a custom Repl banner & prompt (do this before setup())
   ofxRepl::setReplBanner("Orbit Repl");
   ofxRepl::setReplPrompt("prompt> ");
-  
-  // setup editor with event listener
   editor.setup(this);
-  
-  // make some room for the bottom editor info text
   editor.resize(ofGetWidth(), ofGetHeight()-ofxEditor::getCharHeight());
-
   orbitSyntax.setLang("Orbit");
   orbitSyntax.addFileExt("orbit"); // associate .lua with Lua
   orbitSyntax.setSingleLineComment("//");
@@ -46,51 +36,27 @@ void ofApp::setup() {
   colorScheme.setTextColor(ofColor(255)); // main text color
 
   editor.setColorScheme(&colorScheme);
-  // editor.openFile("test.orbit");
-  // setup GLSL syntax via xml file
-  syntax.loadFile("glslSyntax.xml"); // lang: GLSL, file exts: frag & vert
+  syntax.loadFile("glslSyntax.xml"); 
   editor.getSettings().addSyntax(&syntax);
   editor.getSettings().printSyntaxes();
-
-  
-  // open & load a file into the current editor (1)
   editor.openFile("hello.orbit", 1);
-  //ofLogNotice() << "number of lines: " << editor.getNumLines(1);
   editor.openFile("intl.orbit", 2);
-  //ofLogNotice() << "number of lines: " << editor.getNumLines(2);
   
-  // change multi editor settings, see ofxEditorSettings.h for details
-  //editor.getSettings().setCursorColor(ofColor::blue); // current pos curso
-//  editor.getSettings().setAlpha(0.1); // main text, cursor, & highlight alpha
-  
-	// other settings
   editor.setLineWrapping(true);
   editor.setLineNumbers(true);
   editor.setAutoFocus(false);
   
-  // move the cursor to a specific line
-  //editor.setCurrentLine(5);
-  //ofLogNotice() << "current line: " << editor.getCurrentLine();
   orbitON = 0;
   camera.setDistance(200); 
 
   pointLight.setDiffuseColor( ofColor(255.f, 255.f, 255.f));
 
-  // specular color, the highlight/shininess color //
-  pointLight.setSpecularColor( ofColor(255.f, 255.f, 255.f));
+    pointLight.setSpecularColor( ofColor(255.f, 255.f, 255.f));
   
-  // shininess is a value between 0 - 128, 128 being the most shiny //
   material.setShininess( 128 );
 
-  // colorHue = ofRandom(0, 250);
-
-  //lightColor.setBrightness( 180.f );
-  // lightColor.setSaturation( 150.f );
-
-  //materialColor = ofColor(255, 255, 255, 255); 
+  // revisar el brillo 
   
-  //materialColor.setBrightness(255.f);
-  //materialColor.setSaturation(255);
   pointLight.setPosition(camera.getPosition());
   material.setSpecularColor(materialColor);
   
@@ -129,9 +95,8 @@ void ofApp::setup() {
   
   pointLight.enable();
 
-  //fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
-  fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB32F_ARB); 
-  //fbo.getTextureReference().setTextureMinMagFilter(GL_NEAREST,GL_NEAREST);
+  fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+  fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB32F_ARB); // activar 
   myGlitch.setup(&fbo);
   convergence = false;
   glow = false;
@@ -158,13 +123,6 @@ void ofApp::setup() {
   retroX = 0;
   retroY = 0;
 
-  /*    shader.load("Shaders/shaderExample");
-	shaderFbo.allocate(ofGetWidth(), ofGetHeight());
-	shaderFbo.begin();
-	ofClear(0, 0, 0, 0);
-	shaderFbo.end();
-	shaderON = 1; */
-
   shaderON = 0; 
   #ifdef TARGET_OPENGLES
   shader.load("shaders_gles/noise.vert","shaders_gles/noise.frag");
@@ -177,6 +135,8 @@ void ofApp::setup() {
     #endif
 
   shaderName = "noise";
+  reciever.setup(5612);
+
 }
 
 //--------------------------------------------------------------
@@ -204,19 +164,15 @@ void ofApp::update() {
     drawScene();
   }
 
-  /*
-  if(shaderON == 1 && glitchON == 1){
-  shaderFbo.begin();
-  ofClear(0, 0, 0, 0);
-  shader.begin();  
-  shader.setUniformTexture("tex0", fbo.getTextureReference(), 0);
-  shader.setUniform1f("time", ofGetElapsedTimef());
-  shader.setUniform2f("resolution", ofGetWidth(), ofGetHeight());
-  fbo.draw(0, 0);
-  shader.end();
-  shaderFbo.end();
+  while (reciever.hasWaitingMessages()){
+        
+    ofxOscMessage m;
+    reciever.getNextMessage(&m);
+
+
+    
   }
-  */
+
 }
 
 //--------------------------------------------------------------
@@ -902,45 +858,111 @@ void ofApp::evalReplEvent(const string &text) {
   editor.evalReplReturn(text); // print this, then prompt
   //editor.evalReplReturn(); // empty response, just prints prompt
   std::vector < std::string > texto = ofSplitString(text, " ");
-  
-  if(texto[0] == "video" && texto[1] == "draw" && texto.size() == 4){ 
-    videoLC[ofToInt(texto[2])].close();
-    string temp = "videos/" + texto[3] + ".mov";
-    videoLC[ofToInt(texto[2])].setPixelFormat(OF_PIXELS_RGBA);
-    videoLC[ofToInt(texto[2])].setLoopState(OF_LOOP_NORMAL);
-    videoLC[ofToInt(texto[2])].load(temp);
+
+   if(texto[1] == "video" && texto[2] == "draw" && texto.size() == 4){ 
+    videoLC[ofToInt(texto[0])].close();
+    string temp = "videos/" + texto[3];
+    videoLC[ofToInt(texto[0])].setPixelFormat(OF_PIXELS_RGBA);
+    videoLC[ofToInt(texto[0])].setLoopState(OF_LOOP_NORMAL);
+    videoLC[ofToInt(texto[0])].load(temp);
     if(texto[0] != "close"){
-      videoLC[ofToInt(texto[2])].play();
+      videoLC[ofToInt(texto[0])].play();
     }
-    vScaleX[ofToInt(texto[2])] = 1.0;
-    vScaleY[ofToInt(texto[2])] = 1.0;
-    vRotX[ofToInt(texto[2])] = 0;
-    vRotY[ofToInt(texto[2])] = 0;
-    vRotZ[ofToInt(texto[2])] = 0;
-    vOpacity[ofToInt(texto[2])] = 255;
+    vScaleX[ofToInt(texto[0])] = 1.0;
+    vScaleY[ofToInt(texto[0])] = 1.0;
+    vRotX[ofToInt(texto[0])] = 0;
+    vRotY[ofToInt(texto[0])] = 0;
+    vRotZ[ofToInt(texto[0])] = 0;
+    vOpacity[ofToInt(texto[0])] = 255;
     videoON = 1;
+    
   }
-  if(texto[0] == "video" && texto[1] == "close" && texto[1] != "draw"){
-    videoLC[ofToInt(texto[2])].stop();
-    videoLC[ofToInt(texto[2])].close();
-    vX[ofToInt(texto[2])] = 0;
-    vY[ofToInt(texto[2])] = 0;
-    vSpeed[ofToInt(texto[2])] = 1;
-    vOpacity[ofToInt(texto[2])] = 255;
-    vX[ofToInt(texto[2])] = 0;
-    vY[ofToInt(texto[2])] = 0;
-    vZ[ofToInt(texto[2])] = 0;
-    vRotX[ofToInt(texto[2])] = 0;
-    vRotZ[ofToInt(texto[2])] = 0;
-    vRotX[ofToInt(texto[2])] = 0;
+  
+  if(texto[1] == "video" && texto[2] == "close"){
+    videoLC[ofToInt(texto[0])].stop();
+    videoLC[ofToInt(texto[0])].close();
+    vX[ofToInt(texto[0])] = 0;
+    vY[ofToInt(texto[0])] = 0;
+    vSpeed[ofToInt(texto[0])] = 1;
+    vOpacity[ofToInt(texto[0])] = 255;
+    vX[ofToInt(texto[0])] = 0;
+    vY[ofToInt(texto[0])] = 0;
+    vZ[ofToInt(texto[0])] = 0;
+    vRotX[ofToInt(texto[0])] = 0;
+    vRotZ[ofToInt(texto[0])] = 0;
+    vRotX[ofToInt(texto[0])] = 0;
     videoON = 0;
   }
-
-  if (texto[0] == "video" && texto[1] == "setSpeed"){
-    videoLC[ofToInt(texto[2])].setSpeed(ofToFloat(texto[3]));
-  }
+  //      }
   
-  if(texto[0] == "camera" && texto.size() == 4){
+  if (texto[1] == "video" && texto[2] == "setSpeed"){
+    videoLC[ofToInt(texto[0])].setSpeed(ofToFloat(texto[3]));
+  }
+
+  if (texto[1] == "video" && texto[2] == "setOpacity"){
+    vOpacity[ofToInt(texto[0])] = ofToInt(texto[3]);
+  }
+        
+  if (texto[1] == "video" && texto[2] == "setPosition"){
+    vX[ofToInt(texto[0])] = ofToInt(texto[3]);
+    vY[ofToInt(texto[0])] = ofToInt(texto[4]);
+    vZ[ofToInt(texto[0])] = ofToInt(texto[5]);
+  }
+        
+  if (texto[1] == "video" && texto[2] == "scale" ){
+    vScaleX[ofToInt(texto[0])] = ofToFloat(texto[3]);
+    vScaleY[ofToInt(texto[0])] = ofToFloat(texto[4]);
+  }
+
+  if (texto[1] == "video" && texto[2] == "rotate"){
+    vRotX[ofToInt(texto[0])] = ofToFloat(texto[3]);
+    vRotY[ofToInt(texto[0])] = ofToFloat(texto[4]);
+    vRotZ[ofToInt(texto[0])] = ofToFloat(texto[5]);
+  }
+          
+  if(texto[1] == "draw" && texto.size() == 2){
+    if(texto[0] == "box"){ 
+      boxON = 1; 
+    } 
+    if(texto[0] == "plane"){ 
+      planeON = 1; 
+    }
+    if(texto[0] == "cylinder"){ 
+      cylinderON = 1; 
+    }	
+    if(texto[0] == "sphere"){ 
+      sphereON = 1; 
+    }
+    if(texto[0] == "ico"){ 
+      icoON = 1; 
+    }
+    if(texto[0] == "cone"){ 
+      icoON = 1; 
+    }  
+  }
+
+  if(texto[1] == "clear" && texto.size() == 2){
+    if(texto[0] == "box"){ 
+      boxON = 0; 
+    } 
+    if(texto[0] == "plane"){ 
+      planeON = 0; 
+    }
+    if(texto[0] == "cylinder"){ 
+      cylinderON = 0; 
+    }	
+    if(texto[0] == "sphere"){ 
+      sphereON = 0; 
+    }
+    if(texto[0] == "ico"){ 
+      icoON = 0; 
+    }
+    if(texto[0] == "cone"){ 
+      icoON = 0; 
+    }  
+  } 
+
+  if(texto[0] == "cam" && texto.size() == 4){
     if(texto[1] == "orbit" && ofToInt(texto[2]) == 0 & ofToInt(texto[3]) == 0){
       orbitON = 0;	
     }
@@ -951,4 +973,254 @@ void ofApp::evalReplEvent(const string &text) {
     orbitY = ofToFloat(texto[3]);
   }
   
+  if (texto[0] == "cam" && texto[1] == "setPosition"){
+    camera.setPosition(ofVec3f(ofToInt(texto[2]), ofToInt(texto[3]), ofToInt(texto[4])));
+  }
+        
+  if (texto[0] == "cam" && texto[1] == "lookAt" && texto.size() == 5){
+    centro = ofVec3f(ofToInt(texto[2]), ofToInt(texto[3]), ofToInt(texto[4]));
+  }
+          
+  if (texto[0] == "cam" && texto[1] == "setDistance" ){
+    camdistance = ofToFloat(texto[2]);
+    camera.setDistance(camdistance);
+  }
+
+  // modelos
+   
+  if (texto[1] == "model" && texto[2] == "load" && texto.size() == 4){
+    string temp = "3d/" + texto[3];
+    multiModel[ofToInt(texto[0])].loadModel(temp);
+    //multiModelON = ofToFloat(textAnalisis[2]);
+  }
+  
+  if (texto[1] == "model" && texto[2] == "clear"){
+    multiModel[ofToInt(texto[0])].clear();
+  }
+  
+  if (texto[1] == "model" && texto[2] == "setPosition"){
+    multiModelX[ofToInt(texto[0])] = ofToInt(texto[3]);
+    multiModelY[ofToInt(texto[0])] = ofToInt(texto[4]);
+    multiModelZ[ofToInt(texto[0])] = ofToInt(texto[5]);
+  }
+  
+  if (texto[1] == "model" && texto[2] == "rotate"){
+    multiModelRotX[ofToInt(texto[0])] = ofToInt(texto[3]);
+    multiModelRotY[ofToInt(texto[0])] = ofToInt(texto[4]);
+    multiModelRotZ[ofToInt(texto[0])] = ofToInt(texto[5]);
+  }
+  
+  if (texto[1] == "model" && texto[2] == "scale"){
+    multiModelScale[ofToInt(texto[0])] = ofToFloat(texto[3]);
+  }
+    
+  // if you have some scripting language (e.g. ofxLua)
+  // ofLogNotice() << "currentline " << currentLine;
+
+  if(texto[0] == "mainLight" && texto[1] == "color"){
+    pointLight.setDiffuseColor( ofColor(ofToFloat(texto[2]), ofToFloat(texto[3]), ofToFloat(texto[4])));
+  // specular color, the highlight/shininess color //
+  pointLight.setSpecularColor( ofColor(ofToFloat(texto[2]), ofToFloat(texto[3]), ofToFloat(texto[4])));
+  }
+
+  if(texto[0] == "mainLight" && texto[1] == "disable"){
+    pointLight.disable(); 
+  }
+
+  if(texto[0] == "mainLight" && texto[1] == "enable"){
+    pointLight.enable(); 
+  }
+
+  if(texto[0] == "material" && texto[1] == "setShininess"){
+    material.setShininess( ofToInt(texto[2]) );
+  }
+    
+  if(texto[1] == "light" && texto[2] == "enable"){
+    pointLight2[ofToInt(texto[0])].enable(); 
+  }
+
+  if(texto[1] == "light" && texto[2] == "disable"){
+    pointLight2[ofToInt(texto[0])].disable(); 
+  }
+
+  if(texto[1] == "light" && texto[2] == "draw"){
+    drawLight[ofToInt(texto[0])] = 1; 
+  }
+
+   if(texto[1] == "light" && texto[2] == "clear"){
+    drawLight[ofToInt(texto[0])] = 0; 
+  }
+
+  if(texto[1] == "light" && texto[2] == "color"){
+    colorLight2[ofToInt(texto[0])] = ofColor(ofToInt(texto[3]), ofToInt(texto[4]), ofToInt(texto[5]));
+  }
+
+  if(texto[1] == "light" && texto[2] == "oscSpeed"){
+    lightSpeedX[ofToInt(texto[0])] = ofToFloat(texto[3]);
+    lightSpeedY[ofToInt(texto[0])] = ofToFloat(texto[4]);
+    lightSpeedZ[ofToInt(texto[0])] = ofToFloat(texto[5]);  
+  }
+
+   if(texto[1] == "light" && texto[2] == "oscAmp"){
+    lightAmpX[ofToInt(texto[0])] = ofToFloat(texto[3]);
+    lightAmpY[ofToInt(texto[0])] = ofToFloat(texto[4]);
+    lightAmpZ[ofToInt(texto[0])] = ofToFloat(texto[5]);  
+  }
+
+   if(texto[0] == "feedback" && texto[1] == "enable"){
+     retro = 1; 
+   }
+
+   if(texto[0] == "feedback" && texto[1] == "disable"){
+     retro = 0; 
+   }
+
+   if(texto[0] == "feedback" && texto[1] == "setPosition"){
+     retroX = ofToFloat(texto[2]);
+     retroY = ofToFloat(texto[3]);
+   }
+
+   if (texto[0] == "glitch"){
+     if(texto[2] == "false" && texto[1] == "all"){
+       convergence = false;
+       glow = false;
+       shaker = false;
+       cutslider = false;
+       twist = false;
+       outline = false;
+       noise = false;
+       slitscan = false;
+       swell = false;
+       invert = false;
+     }
+            
+     if(texto[1] == "convergence"){
+       convergence = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+            
+     if(texto[1] == "glow"){
+       glow = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+            
+     if(texto[1] == "shaker"){
+       shaker = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+     
+     if(texto[1] == "cutslider"){
+       cutslider = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+     
+     if(texto[1] == "twist"){
+       twist = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+            
+     if(texto[1] == "outline"){
+       outline = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+     
+     if(texto[1] == "noise"){
+       noise = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+     
+     if(texto[1] == "slitscan"){
+       slitscan = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+     
+     if(texto[1] == "swell"){
+       swell = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+     
+     if(texto[1] == "invert"){
+       invert = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+   }
+   
+   if (texto[0] == "colorRemap"){
+     if(texto[2] == "false" && texto[1] == "all"){
+       highcontrast = false;
+       blueraise = false;
+       redraise = false;
+       greenraise = false;
+       blueinvert = false;
+       redinvert = false;
+       greeninvert = false;
+     }
+     
+     if(texto[1] == "highContrast"){
+       highcontrast = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+     
+     if(texto[1] == "blueRaise"){
+       blueraise = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+     
+     if(texto[1] == "redRaise"){
+       redraise = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+     
+     if(texto[1] == "greenRaise"){
+       greenraise = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+     if(texto[1] == "blueInvert"){
+       blueinvert = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+     if(texto[1] == "redInvert"){
+       redinvert = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     } 
+     if(texto[1] == "greenInvert"){
+       greeninvert = ofToBool(texto[2]);
+       glitchON = ofToBool(texto[2]);
+     }
+   }
+
+   if(texto[0] == "shader" && texto[1] == "enable"){
+     shaderON = 1; 
+   }
+
+   if(texto[0] == "shader" && texto[1] == "disable"){
+     shaderON = 0; 
+   }
+
+   if(texto[0] == "term"){
+     string comando;
+     comando = texto[1]; 
+     string result = ofSystem(comando);
+     ofLogNotice() << "term: " << result;
+   }
+
+   if(texto[0] == "oscSender"){
+     sender.setup(texto[1], ofToInt(texto[2]));
+    ofxOscMessage m;
+    m.setAddress(texto[3]);
+    m.addIntArg(ofToFloat(texto[4]));
+
+    if(texto.size() == 6){
+      m.addIntArg(ofToFloat(texto[5]));     
+    }
+    
+    if(texto.size() == 7){
+      m.addIntArg(ofToFloat(texto[5]));
+      m.addIntArg(ofToFloat(texto[6]));
+    }
+ 
+    sender.sendMessage(m, false);
+
+   }
+   
 }
