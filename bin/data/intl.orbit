@@ -45,7 +45,7 @@ Optimización vs. estándar. En Orbit es posible utilizar videos codificados en 
 
 También es posible utilizar otras cosas que revisaremos más adelante. 
 
-En ambos casos, el contendor debe ser .mov
+El contenedor no importa tanto como el códec. 
 
 Una guía para transcodificar a Hap se puede encontrar en el [[README.md]] de este repositorio.
 
@@ -57,7 +57,9 @@ El primer ejemplo que correremos es el siguiente:
 
 
 
-1 video draw samplehap.mov
+1 hvideo draw samplehap.mov
+
+1 video draw ---
 
 
 
@@ -65,7 +67,9 @@ La línea para limpiar el video es:
 
 
 
-1 video close samplehap.mov
+1 hvideo close
+
+1 video close
 
 
 
@@ -90,6 +94,20 @@ Orbit trata de seguir más o menos la misma sintaxis que los objetos existentes 
 1 video rotate 35 25 67
 
 2 video draw samplehap.mov // para agregar más videos
+
+
+
+1 hvideo setSpeed 2
+
+1 hvideo setOpacity 100
+
+1 hvideo setPosition 200 200 200
+
+1 hvideo scale 2
+
+1 hvideo rotate 35 25 67
+
+2 hvideo draw samplehap.mov // para agregar más videos
 
 
 
@@ -128,6 +146,22 @@ cam setDistance 1000
 Es posible que la cámara enfoque objetos específicos del espacio pero nos hace falta investigar sobre ello. 
 
 Algunos parámetros de la cámara se pueden controlar también con el mouse. 
+
+------ Primitivos ------
+
+Es posible dibujar [[objetos primitivos nativos]] de OpenFrameworks. 
+
+Son afectados por las condiciones del entorno: luz y material.
+
+Los objetos que se pueden invocar son: box, sphere, cone, cylinder, ico y plane.
+
+
+
+draw box
+
+clear box
+
+// hace falta un scale y un setPosition
 
 ------ Entorno -------
 
@@ -178,26 +212,6 @@ mainLight disable // para deshabilitar la luz principal
 1 light oscAmp 1000 500 200
 
 1 light clear
-
-
-
------- Primitivos ------
-
-
-
-Es posible dibujar [[objetos primitivos nativos]] de OpenFrameworks. 
-
-Son afectados por las condiciones del entorno: luz y material.
-
-Los objetos que se pueden invocar son: box, sphere, cone, cylinder, ico y plane.
-
-
-
-draw box
-
-clear box
-
-// hace falta un scale y un setPosition
 
 
 
@@ -343,7 +357,11 @@ oscSender + dirección + puerto + tag + mensaje1 + mensaje2 + mensaje3
 
 ------ Recepción de mensajes OSC -------
 
-Nativamente, 
+En Orbit, casi todos los valores que manipulan la imagen funcionan también como mensajes OSC.
+
+De esta manera es posible controlarlos dinámicamente.
+
+En el archivo de SuperCollider que se encuentra en la carpeta sc se pueden encontrar algunas combinaciones de modificación. 
 
 ------ Secuencias hacia y desde SC ------
 

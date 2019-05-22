@@ -3,3 +3,4 @@ ofxHapPlayer
 ofxAssimpModelLoader
 ofxPostGlitch
 ofxOsc
+ofxCenteredTrueTypeFont

@@ -6,6 +6,7 @@
 #include "ofxAssimpModelLoader.h"
 #include "ofxPostGlitch.h"
 #include "ofxOsc.h"
+#include "ofxCenteredTrueTypeFont.h"
 
 #define LIM 10
 #define LIM2 3
@@ -165,5 +166,67 @@ public:
 
   ofxOscReceiver reciever;
   ofxOscSender sender;
+
+  ofVideoPlayer videoPlayer[LIM];
+  
+  int videoRotX[LIM];
+  int videoRotY[LIM];
+  int videoRotZ[LIM];
+
+  float videoScaleX[LIM];
+  float videoScaleY[LIM];
+  float videoScaleZ[LIM];
+
+  float videoX[LIM];
+  float videoY[LIM];
+  float videoZ[LIM];
+
+  int videoOpacity[LIM];
+  
+  float videoSpeed[LIM];
+  int vON;
+  ofColor colorB1;
+  ofColor colorB2;
+
+  ofxCenteredTrueTypeFont fontOrb[LIM];
+  ofRectangle rectOrb[LIM];
+  
+  string textOrb[LIM];
+  string textOrbPrima[LIM];
+  float noiseX[LIM];
+  float noiseY[LIM];
+  float msgRotX[LIM];
+  float msgRotY[LIM];
+  float msgRotZ[LIM];
+
+  int multiMsg;
+
+  ofxCenteredTrueTypeFont font;
+
+  string wrapString(string text, int width) {
+    
+    string typeWrapped = "";
+    string tempString = "";
+    vector <string> words = ofSplitString(text, " ");
+    
+    for(int i=0; i<words.size(); i++) {
+      
+      string wrd = words[i];
+      cout << wrd << endl;
+      
+      tempString += wrd + " ";
+      int stringwidth = font.stringWidth(tempString);
+      if(stringwidth >= width) {
+	tempString = "";
+	typeWrapped += "\n";
+      }
+      
+      typeWrapped += wrd + " ";
+    }
+    
+    return typeWrapped;
+    
+  }
+
 
 };

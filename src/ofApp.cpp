@@ -61,6 +61,9 @@ void ofApp::setup() {
   material.setSpecularColor(materialColor);
   
   for(int i = 0; i < LIM; i++){
+
+    // multimodel
+
     vOpacity[i] = 255;
     multiModelX[i] = 0;
     multiModelY[i] = 0;
@@ -72,6 +75,20 @@ void ofApp::setup() {
     texturas[i].enableMipmap();
     texturas[i].setTextureWrap(GL_REPEAT, GL_REPEAT);
     texturas[i].setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    videoPlayer[i].setPixelFormat(OF_PIXELS_RGBA);
+
+    // multMsg
+    
+    fontOrb[i].load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+    rectOrb[i];
+    textOrb[i] = "";
+    textOrbPrima[i] = "";
+    noiseX[i] = 0;
+    noiseY[i] = 0;
+    msgRotX[i] = 0;
+    msgRotY[i] = 0;
+    msgRotZ[i] = 0;
+	
   }
 
   // multilight
@@ -144,6 +161,12 @@ void ofApp::update() {
 
   pointLight.setPosition(camera.getPosition());
 
+  for(int i = 0; i < LIM; i++){
+  
+  videoLC[i].update();
+
+  }
+  
   for(int i = 0; i < LIM2; i++){
     pointLight2[i].setPosition(sin(ofGetElapsedTimef()*lightSpeedX[i]) * lightAmpX[i], sin(ofGetElapsedTimef()*lightSpeedY[i]) * lightAmpY[i], sin(ofGetElapsedTimef()*lightSpeedZ[i]) * lightAmpZ[i]);
   }
@@ -168,11 +191,23 @@ void ofApp::update() {
         
     ofxOscMessage m;
     reciever.getNextMessage(&m);
+       
+        if (m.getAddress() == "/multimsg"  &&  m.getNumArgs() == 7){
+            int n = m.getArgAsInt(0);
+            multiMsg = 1;
+            noiseX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+            noiseY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
+            msgRotX[m.getArgAsInt(0)] = m.getArgAsFloat(3);
+            msgRotY[m.getArgAsInt(0)] = m.getArgAsFloat(4);
+            msgRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(5);
+            textOrb[m.getArgAsInt(0)] = m.getArgAsString(6);
+        }
+     
 
-    if (m.getAddress() == "/videoDraw"  &&  m.getNumArgs() ==2){
+    if (m.getAddress() == "/hvideoDraw"  &&  m.getNumArgs() ==2){
       int n = m.getArgAsInt(0);
       videoLC[n].close();
-      string temp = "videos/" + m.getArgAsString(1);
+      string temp = "hvideos/" + m.getArgAsString(1);
       videoLC[n].setPixelFormat(OF_PIXELS_RGBA);
       videoLC[n].setLoopState(OF_LOOP_NORMAL);
       videoLC[n].load(temp);
@@ -186,7 +221,7 @@ void ofApp::update() {
       videoON = 1; 
     }
 
-    if (m.getAddress() == "/videoClose"  &&  m.getNumArgs() ==1 ){
+    if (m.getAddress() == "/hvideoClose"  &&  m.getNumArgs() ==1 ){
       int n = m.getArgAsInt(0);
       videoLC[n].stop();
       videoLC[n].close();
@@ -203,30 +238,384 @@ void ofApp::update() {
       videoON = 0;
     }
 
-    if (m.getAddress() == "/videoSetSpeed"  &&  m.getNumArgs() ==2 ){
+    if (m.getAddress() == "/hvideoSetSpeed"  &&  m.getNumArgs() ==2 ){
        int n = m.getArgAsInt(0);
        videoLC[n].setSpeed(m.getArgAsFloat(1));
     }
     
-    if (m.getAddress() == "/videoSetOpacity"  &&  m.getNumArgs() ==2 ){
+    if (m.getAddress() == "/hvideoSetOpacity"  &&  m.getNumArgs() ==2 ){
       int n = m.getArgAsInt(0);
       vOpacity[n] = m.getArgAsFloat(1);
     }
 
-    if (m.getAddress() == "/videoSetPosition"  &&  m.getNumArgs() ==4 ){
+    if (m.getAddress() == "/hvideoSetPosition"  &&  m.getNumArgs() ==4 ){
       int n = m.getArgAsInt(0);
       vX[n] = m.getArgAsFloat(1);
       vY[n] = m.getArgAsFloat(2);
       vZ[n] = m.getArgAsFloat(3);
     }
 
-    if (m.getAddress() == "/videoScale"  &&  m.getNumArgs() ==2 ){
+    if (m.getAddress() == "/hvideoScale"  &&  m.getNumArgs() ==2 ){
       int n = m.getArgAsInt(0);
-      // vScaleX[n] = m.getArgAsFloat(
+      vScaleX[n] = m.getArgAsFloat(1);
+      vScaleY[n] = m.getArgAsFloat(1); 
+    }
+
+    if (m.getAddress() == "/hvideoRotate"  &&  m.getNumArgs() ==4 ){
+      int n = m.getArgAsInt(0);
+      vRotX[n] = m.getArgAsFloat(1);
+      vRotY[n] = m.getArgAsFloat(2);
+      vRotZ[n] = m.getArgAsFloat(3);
     }
     
+    if (m.getAddress() == "/videoDraw"  &&  m.getNumArgs() ==2){
+      int n = m.getArgAsInt(0);
+      videoPlayer[n].close();
+      string temp = "videos/" + m.getArgAsString(1);
+      videoPlayer[n].setPixelFormat(OF_PIXELS_RGBA);
+      videoPlayer[n].setLoopState(OF_LOOP_NORMAL);
+      videoPlayer[n].load(temp);
+      videoPlayer[n].play();
+      videoScaleX[n] = 1.0;
+      videoScaleY[n] = 1.0;
+      videoRotX[n] = 0;
+      videoRotY[n] = 0;
+      videoRotZ[n] = 0;
+      videoOpacity[n] = 255;
+      vON = 1; 
+    }
+
+    if (m.getAddress() == "/videoClose"  &&  m.getNumArgs() ==1 ){
+      int n = m.getArgAsInt(0);
+      videoPlayer[n].stop();
+      videoPlayer[n].close();
+      videoX[n] = 0;
+      videoY[n] = 0;
+      videoSpeed[n] = 1;
+      videoOpacity[n] = 255;
+      videoX[n] = 0;
+      videoY[n] = 0;
+      videoZ[n] = 0;
+      videoRotX[n] = 0;
+      videoRotZ[n] = 0;
+      videoRotX[n] = 0;
+      vON = 0;
+    }
+
+    if (m.getAddress() == "/videoSetSpeed"  &&  m.getNumArgs() ==2 ){
+       int n = m.getArgAsInt(0);
+       videoPlayer[n].setSpeed(m.getArgAsFloat(1));
+    }
+    
+    if (m.getAddress() == "/videoSetOpacity"  &&  m.getNumArgs() ==2 ){
+      int n = m.getArgAsInt(0);
+      videoOpacity[n] = m.getArgAsFloat(1);
+    }
+
+    if (m.getAddress() == "/videoSetPosition"  &&  m.getNumArgs() ==4 ){
+      int n = m.getArgAsInt(0);
+      videoX[n] = m.getArgAsFloat(1);
+      videoY[n] = m.getArgAsFloat(2);
+      videoZ[n] = m.getArgAsFloat(3);
+    }
+
+    if (m.getAddress() == "/videoScale"  &&  m.getNumArgs() ==2 ){
+      int n = m.getArgAsInt(0);
+      videoScaleX[n] = m.getArgAsFloat(1);
+      videoScaleY[n] = m.getArgAsFloat(1); 
+    }
+
+    if (m.getAddress() == "/videoRotate"  &&  m.getNumArgs() ==4 ){
+      int n = m.getArgAsInt(0);
+      videoRotX[n] = m.getArgAsFloat(1);
+      videoRotY[n] = m.getArgAsFloat(2);
+      videoRotZ[n] = m.getArgAsFloat(3);
+    }
+
+    if (m.getAddress() == "/draw"  &&  m.getNumArgs() ==1 ){
+      if(m.getArgAsString(0) == "box"){ 
+	boxON = 1; 
+      } 
+      if(m.getArgAsString(0) == "plane"){ 
+	planeON = 1; 
+      }
+      if(m.getArgAsString(0) == "cylinder"){ 
+	cylinderON = 1; 
+      }	
+      if(m.getArgAsString(0) == "sphere"){ 
+	sphereON = 1; 
+      }
+      if(m.getArgAsString(0) == "ico"){ 
+	icoON = 1; 
+      }
+      if(m.getArgAsString(0) == "cone"){ 
+	icoON = 1; 
+      }
+    }
+    
+    if (m.getAddress() == "/clear"  &&  m.getNumArgs() ==1 ){
+      if(m.getArgAsString(0) == "box"){ 
+	boxON = 1; 
+      } 
+      if(m.getArgAsString(0) == "plane"){ 
+	planeON = 1; 
+      }
+      if(m.getArgAsString(0) == "cylinder"){ 
+	cylinderON = 1; 
+      }	
+      if(m.getArgAsString(0) == "sphere"){ 
+	sphereON = 1; 
+      }
+      if(m.getArgAsString(0) == "ico"){ 
+	icoON = 1; 
+      }
+      if(m.getArgAsString(0) == "cone"){ 
+	icoON = 1; 
+      }
+    }
+
+    if (m.getAddress() == "/camOrbit"  &&  m.getNumArgs() ==2 ){
+      int n = m.getArgAsInt(0);
+      if(m.getArgAsInt(0) == 0 && m.getArgAsInt(1) == 0){
+	orbitON = 0; 
+      }
+      else{
+	orbitON = 1;
+      }
+      orbitX = m.getArgAsFloat(0);
+      orbitY = m.getArgAsFloat(1); 
+    }
+
+    if (m.getAddress() == "/camSetPosition"  &&  m.getNumArgs() ==3 ){
+      camera.setPosition(m.getArgAsFloat(0), m.getArgAsFloat(1), m.getArgAsFloat(2));
+    }
+
+    if (m.getAddress() == "/camLookAt"  &&  m.getNumArgs() ==3 ){
+      centro = ofVec3f(m.getArgAsFloat(0), m.getArgAsFloat(1), m.getArgAsFloat(2));
+    }
+
+    if (m.getAddress() == "/camSetDistance"  &&  m.getNumArgs() ==1 ){
+      camera.setDistance(m.getArgAsFloat(0)); 
+    }
+
+    if (m.getAddress() == "/modelLoad" && m.getNumArgs() == 2){
+      string temp = "3d/" + m.getArgAsString(1);
+      multiModel[m.getArgAsInt(0)].loadModel(temp);
+    }
+
+    if (m.getAddress() == "/modelClear" && m.getNumArgs() == 1){
+      multiModel[m.getArgAsInt(0)].clear();	  
+    }
+    
+    if (m.getAddress() == "/modelSetPosition" && m.getNumArgs() == 4){
+      multiModelX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+      multiModelY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
+      multiModelZ[m.getArgAsInt(0)] = m.getArgAsFloat(3);
+    }
+
+    if (m.getAddress() == "/modelRotate" && m.getNumArgs() == 4){
+      multiModelRotX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+      multiModelRotY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
+      multiModelRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(3);
+    }
+
+    if (m.getAddress() == "/modelScale" && m.getNumArgs() == 2){
+      multiModelScale[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+    }
+
+    if (m.getAddress() == "/mainLightColor" && m.getNumArgs() == 3){
+      pointLight.setDiffuseColor(ofColor(m.getArgAsInt(0), m.getArgAsInt(1), m.getArgAsInt(2)));
+      // specular color, the highlight/shininess color //
+      pointLight.setSpecularColor( ofColor(m.getArgAsInt(0), m.getArgAsInt(1), m.getArgAsInt(2)));
+    }
+
+     if (m.getAddress() == "/mainLightDisable"){
+       pointLight.disable();
+     }
+
+     if (m.getAddress() == "/mainLightEnable"){
+       pointLight.enable();
+     }
+     
+     if (m.getAddress() == "/lightEnable" && m.getNumArgs() == 1){
+       pointLight2[m.getArgAsInt(0)].enable();
+     }
+
+     if (m.getAddress() == "/lightDisable" && m.getNumArgs() == 1){
+       pointLight2[m.getArgAsInt(0)].disable();
+     }
+
+     if (m.getAddress() == "/lightDraw" && m.getNumArgs() == 1){
+       drawLight[m.getArgAsInt(0)] = 1; 
+     }
+     
+     if (m.getAddress() == "/lightClear" && m.getNumArgs() == 1){
+       drawLight[m.getArgAsInt(0)] = 0; 
+     }
+
+     if (m.getAddress() == "/lightColor" && m.getNumArgs() == 4){
+       colorLight2[m.getArgAsInt(0)] = ofColor(m.getArgAsInt(1), m.getArgAsInt(2), m.getArgAsInt(3));  
+     }
+
+     if (m.getAddress() == "/lightOscSpeed" && m.getNumArgs() == 4){
+       lightSpeedX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+       lightSpeedY[m.getArgAsInt(0)] = m.getArgAsFloat(2); 
+       lightSpeedZ[m.getArgAsInt(0)] = m.getArgAsFloat(3); 
+     }
+
+     if (m.getAddress() == "/lightOscAmp" && m.getNumArgs() == 4){
+       lightAmpX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+       lightAmpY[m.getArgAsInt(0)] = m.getArgAsFloat(2); 
+       lightAmpZ[m.getArgAsInt(0)] = m.getArgAsFloat(3); 
+     }
+     
+     if (m.getAddress() == "/feedbackEnable"){
+       retro = 1; 
+     }
+     
+     if (m.getAddress() == "/feedbackDisable"){
+       retro = 0; 
+     }
+
+     if (m.getAddress() == "/feedbackSetPosition" && m.getNumArgs() == 2){
+       retroX = m.getArgAsFloat(0);
+       retroY = m.getArgAsFloat(1);
+     }
+
+     if (m.getAddress() == "/glitchAllFalse"){
+       convergence = false;
+       glow = false;
+       shaker = false;
+       cutslider = false;
+       twist = false;
+       outline = false;
+       noise = false;
+       slitscan = false;
+       swell = false;
+       invert = false;
+     }
+
+     if (m.getAddress() == "/glitchConvergence" && m.getNumArgs() == 1){
+       convergence = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+
+     if (m.getAddress() == "/glitchGlow" && m.getNumArgs() == 1){
+       glow = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+
+     if (m.getAddress() == "/glitchShaker" && m.getNumArgs() == 1){
+       shaker = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+
+     if (m.getAddress() == "/glitchCutslider" && m.getNumArgs() == 1){
+       cutslider = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+
+     if (m.getAddress() == "/glitchTwist" && m.getNumArgs() == 1){
+       twist = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+
+     if (m.getAddress() == "/glitchOutline" && m.getNumArgs() == 1){
+       outline = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+
+     if (m.getAddress() == "/glitchNoise" && m.getNumArgs() == 1){
+       noise = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+
+     if (m.getAddress() == "/glitchSlitscan" && m.getNumArgs() == 1){
+       slitscan = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+
+     if (m.getAddress() == "/glitchSwell" && m.getNumArgs() == 1){
+       swell = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+
+     if (m.getAddress() == "/glitchInvert" && m.getNumArgs() == 1){
+       invert = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+
+     if (m.getAddress() == "/colorRemapAllFalse"){
+       highcontrast = false;
+       blueraise = false;
+       redraise = false;
+       greenraise = false;
+       blueinvert = false;
+       redinvert = false;
+       greeninvert = false;
+     }
+
+     if (m.getAddress() == "/colorRemapHighcontrast" && m.getNumArgs() == 1){
+       highcontrast = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+
+     if (m.getAddress() == "/colorRemapBlueraise" && m.getNumArgs() == 1){
+       blueraise = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+     
+     if (m.getAddress() == "/colorRemapRedraise" && m.getNumArgs() == 1){
+       redraise = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+     
+     if (m.getAddress() == "/colorRemapGreenraise" && m.getNumArgs() == 1){
+       greenraise = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+
+     if (m.getAddress() == "/colorRemapBlueinvert" && m.getNumArgs() == 1){
+       blueinvert = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+     
+     if (m.getAddress() == "/colorRemapRedinvert" && m.getNumArgs() == 1){
+       redinvert = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+
+     if (m.getAddress() == "/colorRemapGreeninvert" && m.getNumArgs() == 1){
+       greeninvert = m.getArgAsBool(0);
+       glitchON = m.getArgAsBool(0); 
+     }
+     
+     if (m.getAddress() == "/shaderEnable"){
+       shaderON = 1;  
+     }
+ 
+     if (m.getAddress() == "/shaderDisable"){
+       shaderON = 0;  
+     }
+
+     if (m.getAddress() == "/backgroundColor" && m.getArgAsInt(0) == 1){
+       colorB1 = (m.getArgAsInt(1), m.getArgAsInt(2), m.getArgAsInt(3));
+     }
+     
+     if (m.getAddress() == "/backgroundColor" && m.getArgAsInt(0) == 2){
+       colorB2 = (m.getArgAsInt(1), m.getArgAsInt(2), m.getArgAsInt(3));
+     }
+
+     if (m.getAddress() == "/backgroundGradientEnable" ){
+       colorBackground = 1; 
+     }
+
+     if (m.getAddress() == "/backgroundGradientDisable" ){
+       colorBackground = 0; 
+     }
   }
 }
+  
 
 //--------------------------------------------------------------
 void ofApp::draw() {
@@ -236,7 +625,7 @@ void ofApp::draw() {
   ofSetRectMode(OF_RECTMODE_CORNER);
           
   if(glitchON == 1 && colorBackground ==1){
-    ofBackgroundGradient(colorLight2[1], colorLight2[2],  OF_GRADIENT_LINEAR);
+    ofBackgroundGradient(colorB1, colorB2,  OF_GRADIENT_LINEAR);
   }
     
   myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, convergence);
@@ -277,10 +666,16 @@ void ofApp::draw() {
 
 //--------------------------------------------------------------
 void ofApp::drawScene() {
-
+  
+  ofRectangle rect;
+  
   if(glitchON == 1){
   fbo.begin();
   ofClear(0);
+  }
+
+  if(glitchON == 0 && colorBackground == 1){
+    ofBackgroundGradient(colorB1, colorB2 , OF_GRADIENT_LINEAR);
   }
 
   if(shaderON == 1){
@@ -328,6 +723,19 @@ void ofApp::drawScene() {
     ofScale(vScaleX[i] * 0.25,vScaleY[i] * 0.25, vScaleZ[i] * 0.25);
     ofTranslate((vX[i]),vY[i], vZ[i]);
     videoLC[i].draw(0, 0);
+    ofPopMatrix();
+   }
+
+  for(int i = 0; i < LIM; i++){      
+     //ofEnableAlphaBlending();
+    ofPushMatrix(); 
+    ofRotateX(videoRotX[i]);
+    ofRotateY(videoRotY[i]);
+    ofRotateZ(videoRotZ[i]);
+    ofSetColor(255,videoOpacity[i]);
+    ofScale(videoScaleX[i] * 0.25,videoScaleY[i] * 0.25, videoScaleZ[i] * 0.25);
+    ofTranslate((videoX[i]),videoY[i], videoZ[i]);
+    videoPlayer[i].draw(0, 0);
     ofPopMatrix();
    }
 
@@ -381,9 +789,20 @@ void ofApp::drawScene() {
   // multimodelos
     
     for(int i = 0; i < LIM; i++){
-        
+
+      #ifdef TARGET_LINUX
+
       ofTexture *texture[i] = {0};
       ofShader *shader[i] = {0};
+
+      #endif
+
+      #ifdef TARGET_OSX
+      
+      ofTexture *texture[i];
+      ofShader *shader[i];
+
+      #endif
       
       if(videoTex == 1){
 	// aqui van los videos como texturas
@@ -412,18 +831,38 @@ void ofApp::drawScene() {
       }
         
       multiModel[i].drawFaces();
-        
-      if(textureON == 1){
-	texturas[i].unbind();
-      }
-        
+                
       if(videoTex == 1){
 	texture[i] -> unbind();
 	if (shader[i]){
 	  shader[i]->end();
 	}
-      }  
+      }
+
+      if(textureON == 1){
+	texturas[i].unbind();
+      }
+
       ofPopMatrix();
+    }
+
+    // multimsg 
+    
+    if(multiMsg == 1){
+      for(int i = 0; i < LIM; i++){
+	// aquí había push matrix
+	ofPushMatrix();
+	ofTranslate(0, 0, 0);
+	ofScale(0.25, 0.25, 0.25);
+	ofRotateX(msgRotX[i]);
+	ofRotateY(msgRotY[i]);
+	ofRotateZ(msgRotZ[i]);
+	textOrbPrima[i] = wrapString(textOrb[i], 500);
+	rectOrb[i] = fontOrb[i].getStringBoundingBox(textOrbPrima[i], 0, 0);
+	//ofNoFill();
+	fontOrb[i].drawString(textOrbPrima[i], noiseX[i] + (rect.width*0.5),  noiseY[i] + (rect.height*0.5));
+	ofPopMatrix();
+      }
     }
 
     material.end(); 
@@ -534,10 +973,69 @@ void ofApp::executeScriptEvent(int &whichEditor) {
   texto = ofSplitString(lineas[editor.getCurrentLine()], " ");
   
   ofLogNotice() << "Orbit: " << lineas[editor.getCurrentLine()];
-  
-  if(texto[1] == "video" && texto[2] == "draw" && texto.size() == 4){ 
-    videoLC[ofToInt(texto[0])].close();
+
+ if(texto[1] == "video" && texto[2] == "draw" && texto.size() == 4){ 
+   //videoLC[ofToInt(texto[0])].close();
     string temp = "videos/" + texto[3];
+    videoPlayer[ofToInt(texto[0])].setPixelFormat(OF_PIXELS_RGBA);
+    videoPlayer[ofToInt(texto[0])].setLoopState(OF_LOOP_NORMAL);
+    videoPlayer[ofToInt(texto[0])].load(temp);
+    //if(texto[0] != "close"){
+    videoPlayer[ofToInt(texto[0])].play();
+      // }
+    videoScaleX[ofToInt(texto[0])] = 1.0;
+    videoScaleY[ofToInt(texto[0])] = 1.0;
+    videoRotX[ofToInt(texto[0])] = 0;
+    videoRotY[ofToInt(texto[0])] = 0;
+    videoRotZ[ofToInt(texto[0])] = 0;
+    videoOpacity[ofToInt(texto[0])] = 255;
+    vON = 1;
+  }
+
+ if(texto[1] == "video" && texto[2] == "close"){
+   videoPlayer[ofToInt(texto[0])].stop();
+   videoPlayer[ofToInt(texto[0])].close();
+   videoX[ofToInt(texto[0])] = 0;
+   videoY[ofToInt(texto[0])] = 0;
+   videoSpeed[ofToInt(texto[0])] = 1;
+   videoOpacity[ofToInt(texto[0])] = 255;
+   videoX[ofToInt(texto[0])] = 0;
+   videoY[ofToInt(texto[0])] = 0;
+   videoZ[ofToInt(texto[0])] = 0;
+   videoRotX[ofToInt(texto[0])] = 0;
+   videoRotZ[ofToInt(texto[0])] = 0;
+   videoRotX[ofToInt(texto[0])] = 0;
+   vON = 0;
+ }
+
+  if (texto[1] == "video" && texto[2] == "setSpeed"){
+    videoPlayer[ofToInt(texto[0])].setSpeed(ofToFloat(texto[3]));
+  }
+
+  if (texto[1] == "video" && texto[2] == "setOpacity"){
+    videoOpacity[ofToInt(texto[0])] = ofToInt(texto[3]);
+  }
+        
+  if (texto[1] == "video" && texto[2] == "setPosition"){
+    videoX[ofToInt(texto[0])] = ofToInt(texto[3]);
+    videoY[ofToInt(texto[0])] = ofToInt(texto[4]);
+    videoZ[ofToInt(texto[0])] = ofToInt(texto[5]);
+  }
+        
+  if (texto[1] == "video" && texto[2] == "scale" ){
+    videoScaleX[ofToInt(texto[0])] = ofToFloat(texto[3]);
+    videoScaleY[ofToInt(texto[0])] = ofToFloat(texto[3]);
+  }
+
+  if (texto[1] == "video" && texto[2] == "rotate"){
+    videoRotX[ofToInt(texto[0])] = ofToFloat(texto[3]);
+    videoRotY[ofToInt(texto[0])] = ofToFloat(texto[4]);
+    videoRotZ[ofToInt(texto[0])] = ofToFloat(texto[5]);
+  }
+  
+  if(texto[1] == "hvideo" && texto[2] == "draw" && texto.size() == 4){ 
+    videoLC[ofToInt(texto[0])].close();
+    string temp = "hvideos/" + texto[3];
     videoLC[ofToInt(texto[0])].setPixelFormat(OF_PIXELS_RGBA);
     videoLC[ofToInt(texto[0])].setLoopState(OF_LOOP_NORMAL);
     videoLC[ofToInt(texto[0])].load(temp);
@@ -551,10 +1049,9 @@ void ofApp::executeScriptEvent(int &whichEditor) {
     vRotZ[ofToInt(texto[0])] = 0;
     vOpacity[ofToInt(texto[0])] = 255;
     videoON = 1;
-    
   }
   
-  if(texto[1] == "video" && texto[2] == "close"){
+  if(texto[1] == "hvideo" && texto[2] == "close"){
     videoLC[ofToInt(texto[0])].stop();
     videoLC[ofToInt(texto[0])].close();
     vX[ofToInt(texto[0])] = 0;
@@ -571,26 +1068,26 @@ void ofApp::executeScriptEvent(int &whichEditor) {
   }
   //      }
   
-  if (texto[1] == "video" && texto[2] == "setSpeed"){
+  if (texto[1] == "hvideo" && texto[2] == "setSpeed"){
     videoLC[ofToInt(texto[0])].setSpeed(ofToFloat(texto[3]));
   }
 
-  if (texto[1] == "video" && texto[2] == "setOpacity"){
+  if (texto[1] == "hvideo" && texto[2] == "setOpacity"){
     vOpacity[ofToInt(texto[0])] = ofToInt(texto[3]);
   }
         
-  if (texto[1] == "video" && texto[2] == "setPosition"){
+  if (texto[1] == "hvideo" && texto[2] == "setPosition"){
     vX[ofToInt(texto[0])] = ofToInt(texto[3]);
     vY[ofToInt(texto[0])] = ofToInt(texto[4]);
     vZ[ofToInt(texto[0])] = ofToInt(texto[5]);
   }
         
-  if (texto[1] == "video" && texto[2] == "scale" ){
+  if (texto[1] == "hvideo" && texto[2] == "scale" ){
     vScaleX[ofToInt(texto[0])] = ofToFloat(texto[3]);
     vScaleY[ofToInt(texto[0])] = ofToFloat(texto[3]);
   }
 
-  if (texto[1] == "video" && texto[2] == "rotate"){
+  if (texto[1] == "hvideo" && texto[2] == "rotate"){
     vRotX[ofToInt(texto[0])] = ofToFloat(texto[3]);
     vRotY[ofToInt(texto[0])] = ofToFloat(texto[4]);
     vRotZ[ofToInt(texto[0])] = ofToFloat(texto[5]);
@@ -898,6 +1395,23 @@ void ofApp::executeScriptEvent(int &whichEditor) {
     sender.sendMessage(m, false);
 
    }
+
+   if(texto[0] == "1" && texto[1] == "background" && texto[2] == "color"){
+     colorB1 = (ofToInt(texto[3]), ofToInt(texto[4]), ofToInt(texto[5]));
+   }
+
+   if(texto[0] == "2" && texto[1] == "background" && texto[2] == "color"){
+     colorB2 = (ofToInt(texto[3]), ofToInt(texto[4]), ofToInt(texto[5]));
+   }
+
+   if(texto[0] == "backgroundGradient" && texto[1] == "enable"){
+     colorBackground =1; 
+   }
+
+   if(texto[0] == "backgroundGradient" && texto[1] == "disable"){
+     colorBackground =0; 
+   }
+
 }
 
 //--------------------------------------------------------------
@@ -912,15 +1426,75 @@ void ofApp::evalReplEvent(const string &text) {
   //editor.evalReplReturn(); // empty response, just prints prompt
   std::vector < std::string > texto = ofSplitString(text, " ");
 
-   if(texto[1] == "video" && texto[2] == "draw" && texto.size() == 4){ 
-    videoLC[ofToInt(texto[0])].close();
+ if(texto[1] == "video" && texto[2] == "draw" && texto.size() == 4){ 
+   //videoLC[ofToInt(texto[0])].close();
     string temp = "videos/" + texto[3];
+    videoPlayer[ofToInt(texto[0])].setPixelFormat(OF_PIXELS_RGBA);
+    videoPlayer[ofToInt(texto[0])].setLoopState(OF_LOOP_NORMAL);
+    videoPlayer[ofToInt(texto[0])].load(temp);
+    //if(texto[0] != "close"){
+    videoPlayer[ofToInt(texto[0])].play();
+      // }
+    videoScaleX[ofToInt(texto[0])] = 1.0;
+    videoScaleY[ofToInt(texto[0])] = 1.0;
+    videoRotX[ofToInt(texto[0])] = 0;
+    videoRotY[ofToInt(texto[0])] = 0;
+    videoRotZ[ofToInt(texto[0])] = 0;
+    videoOpacity[ofToInt(texto[0])] = 255;
+    vON = 1;
+  }
+
+ if(texto[1] == "video" && texto[2] == "close"){
+   videoPlayer[ofToInt(texto[0])].stop();
+   videoPlayer[ofToInt(texto[0])].close();
+   videoX[ofToInt(texto[0])] = 0;
+   videoY[ofToInt(texto[0])] = 0;
+   videoSpeed[ofToInt(texto[0])] = 1;
+   videoOpacity[ofToInt(texto[0])] = 255;
+   videoX[ofToInt(texto[0])] = 0;
+   videoY[ofToInt(texto[0])] = 0;
+   videoZ[ofToInt(texto[0])] = 0;
+   videoRotX[ofToInt(texto[0])] = 0;
+   videoRotZ[ofToInt(texto[0])] = 0;
+   videoRotX[ofToInt(texto[0])] = 0;
+   vON = 0;
+ }
+
+ 
+  if (texto[1] == "video" && texto[2] == "setSpeed"){
+    videoPlayer[ofToInt(texto[0])].setSpeed(ofToFloat(texto[3]));
+  }
+
+  if (texto[1] == "video" && texto[2] == "setOpacity"){
+    videoOpacity[ofToInt(texto[0])] = ofToInt(texto[3]);
+  }
+        
+  if (texto[1] == "video" && texto[2] == "setPosition"){
+    videoX[ofToInt(texto[0])] = ofToInt(texto[3]);
+    videoY[ofToInt(texto[0])] = ofToInt(texto[4]);
+    videoZ[ofToInt(texto[0])] = ofToInt(texto[5]);
+  }
+        
+  if (texto[1] == "video" && texto[2] == "scale" ){
+    videoScaleX[ofToInt(texto[0])] = ofToFloat(texto[3]);
+    videoScaleY[ofToInt(texto[0])] = ofToFloat(texto[3]);
+  }
+
+  if (texto[1] == "video" && texto[2] == "rotate"){
+    videoRotX[ofToInt(texto[0])] = ofToFloat(texto[3]);
+    videoRotY[ofToInt(texto[0])] = ofToFloat(texto[4]);
+    videoRotZ[ofToInt(texto[0])] = ofToFloat(texto[5]);
+  }
+  
+  if(texto[1] == "hvideo" && texto[2] == "draw" && texto.size() == 4){ 
+    videoLC[ofToInt(texto[0])].close();
+    string temp = "hvideos/" + texto[3];
     videoLC[ofToInt(texto[0])].setPixelFormat(OF_PIXELS_RGBA);
     videoLC[ofToInt(texto[0])].setLoopState(OF_LOOP_NORMAL);
     videoLC[ofToInt(texto[0])].load(temp);
-    if(texto[0] != "close"){
+    //if(texto[0] != "close"){
       videoLC[ofToInt(texto[0])].play();
-    }
+      // }
     vScaleX[ofToInt(texto[0])] = 1.0;
     vScaleY[ofToInt(texto[0])] = 1.0;
     vRotX[ofToInt(texto[0])] = 0;
@@ -928,10 +1502,9 @@ void ofApp::evalReplEvent(const string &text) {
     vRotZ[ofToInt(texto[0])] = 0;
     vOpacity[ofToInt(texto[0])] = 255;
     videoON = 1;
-    
   }
   
-  if(texto[1] == "video" && texto[2] == "close"){
+  if(texto[1] == "hvideo" && texto[2] == "close"){
     videoLC[ofToInt(texto[0])].stop();
     videoLC[ofToInt(texto[0])].close();
     vX[ofToInt(texto[0])] = 0;
@@ -948,31 +1521,31 @@ void ofApp::evalReplEvent(const string &text) {
   }
   //      }
   
-  if (texto[1] == "video" && texto[2] == "setSpeed"){
+  if (texto[1] == "hvideo" && texto[2] == "setSpeed"){
     videoLC[ofToInt(texto[0])].setSpeed(ofToFloat(texto[3]));
   }
 
-  if (texto[1] == "video" && texto[2] == "setOpacity"){
+  if (texto[1] == "hvideo" && texto[2] == "setOpacity"){
     vOpacity[ofToInt(texto[0])] = ofToInt(texto[3]);
   }
         
-  if (texto[1] == "video" && texto[2] == "setPosition"){
+  if (texto[1] == "hvideo" && texto[2] == "setPosition"){
     vX[ofToInt(texto[0])] = ofToInt(texto[3]);
     vY[ofToInt(texto[0])] = ofToInt(texto[4]);
     vZ[ofToInt(texto[0])] = ofToInt(texto[5]);
   }
         
-  if (texto[1] == "video" && texto[2] == "scale" ){
+  if (texto[1] == "hvideo" && texto[2] == "scale" ){
     vScaleX[ofToInt(texto[0])] = ofToFloat(texto[3]);
-    vScaleY[ofToInt(texto[0])] = ofToFloat(texto[4]);
+    vScaleY[ofToInt(texto[0])] = ofToFloat(texto[3]);
   }
 
-  if (texto[1] == "video" && texto[2] == "rotate"){
+  if (texto[1] == "hvideo" && texto[2] == "rotate"){
     vRotX[ofToInt(texto[0])] = ofToFloat(texto[3]);
     vRotY[ofToInt(texto[0])] = ofToFloat(texto[4]);
     vRotZ[ofToInt(texto[0])] = ofToFloat(texto[5]);
   }
-          
+  
   if(texto[1] == "draw" && texto.size() == 2){
     if(texto[0] == "box"){ 
       boxON = 1; 
@@ -1275,5 +1848,20 @@ void ofApp::evalReplEvent(const string &text) {
     sender.sendMessage(m, false);
 
    }
-   
+
+   if(texto[0] == "1" && texto[1] == "background" && texto[2] == "color"){
+     colorB1 = (ofToInt(texto[3]), ofToInt(texto[4]), ofToInt(texto[5]));
+   }
+
+   if(texto[0] == "2" && texto[1] == "background" && texto[2] == "color"){
+     colorB2 = (ofToInt(texto[3]), ofToInt(texto[4]), ofToInt(texto[5]));
+   }
+
+   if(texto[0] == "backgroundGradient" && texto[1] == "enable"){
+     colorBackground =1; 
+   }
+
+   if(texto[0] == "backgroundGradient" && texto[1] == "disable"){
+     colorBackground =0; 
+   }   
 }

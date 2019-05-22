@@ -36,9 +36,13 @@ Para instalar el códec Hap: https://github.com/Vidvox/hap-qt-codec/releases/
 
 `$ git clone https://github.com/bangnoise/ofxHapPlayer`
 
-`$ cd addons/ofxHapPlayer`
+`$ cd ofxHapPlayer`
 
 `$ git checkout libavformat-OF-0.9`
+
+En linux es necesario instalar libdispatch y libsnappy. 
+
+`$ sudo apt install libdispatch-dev libsnappy-dev`
 
 Para todos los casos, es necesario utilizar un [fork](https://github.com/bolkaaa/ofxGLEditor) de ofxGLEditor
 
@@ -104,6 +108,10 @@ Es posible transcodificar videos Hap con ffmpeg. En macOS es posible instalar ff
 [El libro de los Shaders (ES). Patricio González Vivo y Jen Lowe](https://thebookofshaders.com/?lan=es)
 
 [Curso de SuperCollider del Taller de Audio del Centro Multimedia (ES). Ernesto Romero y Ezequiel Netri](http://cmm.cenart.gob.mx/tallerdeaudio/cursos/cursocollider/textos/curso%20de%20supercollider%20principiantes.pdf)
+
+[Hoja de información OpenFrameworks en Español](https://hangar.org/webnou/wp-content/uploads/2012/01/Capsulab07.pdf)
+
+[openGL](https://open.gl/introduction)
 
 [ofBook](https://openframeworks.cc/ofBook/chapters/foreword.html)
 
