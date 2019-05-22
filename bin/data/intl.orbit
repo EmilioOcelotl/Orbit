@@ -51,6 +51,8 @@ Una guía para transcodificar a Hap se puede encontrar en el [[README.md]] de es
 
 Es importante señalar que el archivo debe ser invocado con extensión. 
 
+Para declarar esta línea debes situarte en el renglón de la línea y pulsar shift + e
+
 El primer ejemplo que correremos es el siguiente:
 
 
@@ -58,8 +60,6 @@ El primer ejemplo que correremos es el siguiente:
 1 video draw samplehap.mov
 
 
-
-Para declarar esta línea debes situarte en el renglón de la línea y pulsar shift + e
 
 La línea para limpiar el video es:
 
@@ -85,7 +85,7 @@ Orbit trata de seguir más o menos la misma sintaxis que los objetos existentes 
 
 1 video setPosition 200 200 200
 
-1 video setScale 2
+1 video scale 2
 
 1 video rotate 35 25 67
 
@@ -343,7 +343,7 @@ oscSender + dirección + puerto + tag + mensaje1 + mensaje2 + mensaje3
 
 ------ Recepción de mensajes OSC -------
 
-
+Nativamente, 
 
 ------ Secuencias hacia y desde SC ------
 

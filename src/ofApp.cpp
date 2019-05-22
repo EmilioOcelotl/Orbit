@@ -169,10 +169,63 @@ void ofApp::update() {
     ofxOscMessage m;
     reciever.getNextMessage(&m);
 
+    if (m.getAddress() == "/videoDraw"  &&  m.getNumArgs() ==2){
+      int n = m.getArgAsInt(0);
+      videoLC[n].close();
+      string temp = "videos/" + m.getArgAsString(1);
+      videoLC[n].setPixelFormat(OF_PIXELS_RGBA);
+      videoLC[n].setLoopState(OF_LOOP_NORMAL);
+      videoLC[n].load(temp);
+      videoLC[n].play();
+      vScaleX[n] = 1.0;
+      vScaleY[n] = 1.0;
+      vRotX[n] = 0;
+      vRotY[n] = 0;
+      vRotZ[n] = 0;
+      vOpacity[n] = 255;
+      videoON = 1; 
+    }
 
+    if (m.getAddress() == "/videoClose"  &&  m.getNumArgs() ==1 ){
+      int n = m.getArgAsInt(0);
+      videoLC[n].stop();
+      videoLC[n].close();
+      vX[n] = 0;
+      vY[n] = 0;
+      vSpeed[n] = 1;
+      vOpacity[n] = 255;
+      vX[n] = 0;
+      vY[n] = 0;
+      vZ[n] = 0;
+      vRotX[n] = 0;
+      vRotZ[n] = 0;
+      vRotX[n] = 0;
+      videoON = 0;
+    }
+
+    if (m.getAddress() == "/videoSetSpeed"  &&  m.getNumArgs() ==2 ){
+       int n = m.getArgAsInt(0);
+       videoLC[n].setSpeed(m.getArgAsFloat(1));
+    }
+    
+    if (m.getAddress() == "/videoSetOpacity"  &&  m.getNumArgs() ==2 ){
+      int n = m.getArgAsInt(0);
+      vOpacity[n] = m.getArgAsFloat(1);
+    }
+
+    if (m.getAddress() == "/videoSetPosition"  &&  m.getNumArgs() ==4 ){
+      int n = m.getArgAsInt(0);
+      vX[n] = m.getArgAsFloat(1);
+      vY[n] = m.getArgAsFloat(2);
+      vZ[n] = m.getArgAsFloat(3);
+    }
+
+    if (m.getAddress() == "/videoScale"  &&  m.getNumArgs() ==2 ){
+      int n = m.getArgAsInt(0);
+      // vScaleX[n] = m.getArgAsFloat(
+    }
     
   }
-
 }
 
 //--------------------------------------------------------------
@@ -488,9 +541,9 @@ void ofApp::executeScriptEvent(int &whichEditor) {
     videoLC[ofToInt(texto[0])].setPixelFormat(OF_PIXELS_RGBA);
     videoLC[ofToInt(texto[0])].setLoopState(OF_LOOP_NORMAL);
     videoLC[ofToInt(texto[0])].load(temp);
-    if(texto[0] != "close"){
+    //if(texto[0] != "close"){
       videoLC[ofToInt(texto[0])].play();
-    }
+      // }
     vScaleX[ofToInt(texto[0])] = 1.0;
     vScaleY[ofToInt(texto[0])] = 1.0;
     vRotX[ofToInt(texto[0])] = 0;
@@ -534,7 +587,7 @@ void ofApp::executeScriptEvent(int &whichEditor) {
         
   if (texto[1] == "video" && texto[2] == "scale" ){
     vScaleX[ofToInt(texto[0])] = ofToFloat(texto[3]);
-    vScaleY[ofToInt(texto[0])] = ofToFloat(texto[4]);
+    vScaleY[ofToInt(texto[0])] = ofToFloat(texto[3]);
   }
 
   if (texto[1] == "video" && texto[2] == "rotate"){
