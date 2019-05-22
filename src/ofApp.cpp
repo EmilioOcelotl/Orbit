@@ -88,6 +88,12 @@ void ofApp::setup() {
     msgRotX[i] = 0;
     msgRotY[i] = 0;
     msgRotZ[i] = 0;
+
+    videoScaleX[i] = 1; 
+
+    videoScaleY[i] = 1; 
+
+    videoScaleZ[i] = 1; 
 	
   }
 
@@ -164,7 +170,8 @@ void ofApp::update() {
   for(int i = 0; i < LIM; i++){
   
   videoLC[i].update();
-
+  videoPlayer[i].update();
+  
   }
   
   for(int i = 0; i < LIM2; i++){
@@ -191,18 +198,18 @@ void ofApp::update() {
         
     ofxOscMessage m;
     reciever.getNextMessage(&m);
-       
-        if (m.getAddress() == "/multimsg"  &&  m.getNumArgs() == 7){
-            int n = m.getArgAsInt(0);
-            multiMsg = 1;
-            noiseX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
-            noiseY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
-            msgRotX[m.getArgAsInt(0)] = m.getArgAsFloat(3);
-            msgRotY[m.getArgAsInt(0)] = m.getArgAsFloat(4);
-            msgRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(5);
-            textOrb[m.getArgAsInt(0)] = m.getArgAsString(6);
-        }
-     
+    
+    if (m.getAddress() == "/multimsg"  &&  m.getNumArgs() == 7){
+      int n = m.getArgAsInt(0);
+      multiMsg = 1;
+      noiseX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+      noiseY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
+      msgRotX[m.getArgAsInt(0)] = m.getArgAsFloat(3);
+      msgRotY[m.getArgAsInt(0)] = m.getArgAsFloat(4);
+      msgRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(5);
+      textOrb[m.getArgAsInt(0)] = m.getArgAsString(6);
+    }
+    
 
     if (m.getAddress() == "/hvideoDraw"  &&  m.getNumArgs() ==2){
       int n = m.getArgAsInt(0);
@@ -707,14 +714,28 @@ void ofApp::drawScene() {
   }
 
   ofEnableDepthTest(); 
-    
+
+  for(int i = 0; i < LIM; i++){      
+     //ofEnableAlphaBlending();
+    ofPushMatrix(); 
+    ofRotateX(videoRotX[i]);
+    ofRotateY(videoRotY[i]);
+    ofRotateZ(videoRotZ[i]);
+    //ofSetColor(255,videoOpacity[i]);
+    ofScale(videoScaleX[i] * 0.5,videoScaleY[i] * 0.5, videoScaleZ[i] * 0.5);
+    ofTranslate((videoX[i]),videoY[i], videoZ[i]);
+    videoPlayer[i].draw(0, 0);
+    ofPopMatrix();
+   }
+
+  
   camera.begin();
 
   ofDisableLighting(); 
   //pointLight.disable(); 
   //if(videoON == 1){
   for(int i = 0; i < LIM; i++){      
-     //ofEnableAlphaBlending();
+    //ofEnableAlphaBlending();
     ofPushMatrix(); 
     ofRotateX(vRotX[i]);
     ofRotateY(vRotY[i]);
@@ -724,20 +745,7 @@ void ofApp::drawScene() {
     ofTranslate((vX[i]),vY[i], vZ[i]);
     videoLC[i].draw(0, 0);
     ofPopMatrix();
-   }
-
-  for(int i = 0; i < LIM; i++){      
-     //ofEnableAlphaBlending();
-    ofPushMatrix(); 
-    ofRotateX(videoRotX[i]);
-    ofRotateY(videoRotY[i]);
-    ofRotateZ(videoRotZ[i]);
-    ofSetColor(255,videoOpacity[i]);
-    ofScale(videoScaleX[i] * 0.25,videoScaleY[i] * 0.25, videoScaleZ[i] * 0.25);
-    ofTranslate((videoX[i]),videoY[i], videoZ[i]);
-    videoPlayer[i].draw(0, 0);
-    ofPopMatrix();
-   }
+  }
 
   ofEnableLighting();
   // pointLight.enable();
@@ -974,15 +982,13 @@ void ofApp::executeScriptEvent(int &whichEditor) {
   
   ofLogNotice() << "Orbit: " << lineas[editor.getCurrentLine()];
 
- if(texto[1] == "video" && texto[2] == "draw" && texto.size() == 4){ 
-   //videoLC[ofToInt(texto[0])].close();
+  if(texto[1] == "video" && texto[2] == "draw" && texto.size() == 4){ 
+    //videoLC[ofToInt(texto[0])].close();
     string temp = "videos/" + texto[3];
-    videoPlayer[ofToInt(texto[0])].setPixelFormat(OF_PIXELS_RGBA);
+    //   videoPlayer[ofToInt(texto[0])].setPixelFormat(OF_PIXELS_RGBA);
     videoPlayer[ofToInt(texto[0])].setLoopState(OF_LOOP_NORMAL);
-    videoPlayer[ofToInt(texto[0])].load(temp);
-    //if(texto[0] != "close"){
-    videoPlayer[ofToInt(texto[0])].play();
-      // }
+    videoPlayer[ofToInt(texto[0])].load(temp);    
+    videoPlayer[ofToInt(texto[0])].play(); 
     videoScaleX[ofToInt(texto[0])] = 1.0;
     videoScaleY[ofToInt(texto[0])] = 1.0;
     videoRotX[ofToInt(texto[0])] = 0;
@@ -1186,6 +1192,19 @@ void ofApp::executeScriptEvent(int &whichEditor) {
   if (texto[1] == "model" && texto[2] == "scale"){
     multiModelScale[ofToInt(texto[0])] = ofToFloat(texto[3]);
   }
+
+         
+  if (texto[1] == "imgTex"){
+    string temp = "img/" + texto[2];
+    ofDisableArbTex();
+    texturas[ofToInt(texto[0])].generateMipmap();
+    texturas[ofToInt(texto[0])].setTextureWrap(GL_REPEAT, GL_REPEAT);
+    texturas[ofToInt(texto[0])].setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    ofLoadImage(texturas[ofToInt(texto[0])], temp);
+    videoTex = 0;
+    textureON = 1;
+  }
+ 
     
   // if you have some scripting language (e.g. ofxLua)
   // ofLogNotice() << "currentline " << currentLine;
@@ -1426,8 +1445,9 @@ void ofApp::evalReplEvent(const string &text) {
   //editor.evalReplReturn(); // empty response, just prints prompt
   std::vector < std::string > texto = ofSplitString(text, " ");
 
- if(texto[1] == "video" && texto[2] == "draw" && texto.size() == 4){ 
-   //videoLC[ofToInt(texto[0])].close();
+  
+  if(texto[1] == "video" && texto[2] == "draw" && texto.size() == 4){ 
+    //videoLC[ofToInt(texto[0])].close();
     string temp = "videos/" + texto[3];
     videoPlayer[ofToInt(texto[0])].setPixelFormat(OF_PIXELS_RGBA);
     videoPlayer[ofToInt(texto[0])].setLoopState(OF_LOOP_NORMAL);
@@ -1460,7 +1480,6 @@ void ofApp::evalReplEvent(const string &text) {
    vON = 0;
  }
 
- 
   if (texto[1] == "video" && texto[2] == "setSpeed"){
     videoPlayer[ofToInt(texto[0])].setSpeed(ofToFloat(texto[3]));
   }
@@ -1545,7 +1564,7 @@ void ofApp::evalReplEvent(const string &text) {
     vRotY[ofToInt(texto[0])] = ofToFloat(texto[4]);
     vRotZ[ofToInt(texto[0])] = ofToFloat(texto[5]);
   }
-  
+          
   if(texto[1] == "draw" && texto.size() == 2){
     if(texto[0] == "box"){ 
       boxON = 1; 
@@ -1639,6 +1658,19 @@ void ofApp::evalReplEvent(const string &text) {
   if (texto[1] == "model" && texto[2] == "scale"){
     multiModelScale[ofToInt(texto[0])] = ofToFloat(texto[3]);
   }
+
+         
+  if (texto[1] == "imgTex"){
+    string temp = "img/" + texto[2];
+    ofDisableArbTex();
+    texturas[ofToInt(texto[0])].generateMipmap();
+    texturas[ofToInt(texto[0])].setTextureWrap(GL_REPEAT, GL_REPEAT);
+    texturas[ofToInt(texto[0])].setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    ofLoadImage(texturas[ofToInt(texto[0])], temp);
+    videoTex = 0;
+    textureON = 1;
+  }
+ 
     
   // if you have some scripting language (e.g. ofxLua)
   // ofLogNotice() << "currentline " << currentLine;
@@ -1863,5 +1895,7 @@ void ofApp::evalReplEvent(const string &text) {
 
    if(texto[0] == "backgroundGradient" && texto[1] == "disable"){
      colorBackground =0; 
-   }   
+   }
+
+
 }
