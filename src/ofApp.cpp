@@ -50,9 +50,7 @@ void ofApp::setup() {
   camera.setDistance(200); 
 
   pointLight.setDiffuseColor( ofColor(255.f, 255.f, 255.f));
-
-    pointLight.setSpecularColor( ofColor(255.f, 255.f, 255.f));
-  
+  pointLight.setSpecularColor( ofColor(255.f, 255.f, 255.f));
   material.setShininess( 128 );
 
   // revisar el brillo 
@@ -75,7 +73,7 @@ void ofApp::setup() {
     texturas[i].enableMipmap();
     texturas[i].setTextureWrap(GL_REPEAT, GL_REPEAT);
     texturas[i].setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
-    videoPlayer[i].setPixelFormat(OF_PIXELS_RGBA);
+    videoPlayer[i].play();
 
     // multMsg
     
@@ -90,9 +88,7 @@ void ofApp::setup() {
     msgRotZ[i] = 0;
 
     videoScaleX[i] = 1; 
-
     videoScaleY[i] = 1; 
-
     videoScaleZ[i] = 1; 
 	
   }
@@ -118,8 +114,8 @@ void ofApp::setup() {
   
   pointLight.enable();
 
-  fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
-  fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB32F_ARB); // activar 
+   fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+  //fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB32F_ARB); // activar 
   myGlitch.setup(&fbo);
   convergence = false;
   glow = false;
@@ -346,16 +342,10 @@ void ofApp::update() {
       if(m.getArgAsString(0) == "plane"){ 
 	planeON = 1; 
       }
-      if(m.getArgAsString(0) == "cylinder"){ 
-	cylinderON = 1; 
-      }	
       if(m.getArgAsString(0) == "sphere"){ 
 	sphereON = 1; 
       }
       if(m.getArgAsString(0) == "ico"){ 
-	icoON = 1; 
-      }
-      if(m.getArgAsString(0) == "cone"){ 
 	icoON = 1; 
       }
     }
@@ -367,16 +357,10 @@ void ofApp::update() {
       if(m.getArgAsString(0) == "plane"){ 
 	planeON = 1; 
       }
-      if(m.getArgAsString(0) == "cylinder"){ 
-	cylinderON = 1; 
-      }	
       if(m.getArgAsString(0) == "sphere"){ 
 	sphereON = 1; 
       }
       if(m.getArgAsString(0) == "ico"){ 
-	icoON = 1; 
-      }
-      if(m.getArgAsString(0) == "cone"){ 
 	icoON = 1; 
       }
     }
@@ -715,20 +699,6 @@ void ofApp::drawScene() {
 
   ofEnableDepthTest(); 
 
-  for(int i = 0; i < LIM; i++){      
-     //ofEnableAlphaBlending();
-    ofPushMatrix(); 
-    ofRotateX(videoRotX[i]);
-    ofRotateY(videoRotY[i]);
-    ofRotateZ(videoRotZ[i]);
-    //ofSetColor(255,videoOpacity[i]);
-    ofScale(videoScaleX[i] * 0.5,videoScaleY[i] * 0.5, videoScaleZ[i] * 0.5);
-    ofTranslate((videoX[i]),videoY[i], videoZ[i]);
-    videoPlayer[i].draw(0, 0);
-    ofPopMatrix();
-   }
-
-  
   camera.begin();
 
   ofDisableLighting(); 
@@ -746,6 +716,20 @@ void ofApp::drawScene() {
     videoLC[i].draw(0, 0);
     ofPopMatrix();
   }
+
+  for(int i = 0; i < LIM; i++){      
+    //ofEnableAlphaBlending();
+    ofPushMatrix(); 
+    ofRotateX(videoRotX[i]);
+    ofRotateY(videoRotY[i]);
+    ofRotateZ(videoRotZ[i]);
+    //ofSetColor(255,videoOpacity[i]);
+    ofScale(videoScaleX[i] * 0.5,videoScaleY[i] * 0.5);
+    ofTranslate((videoX[i]),videoY[i], videoZ[i]);
+    videoPlayer[i].draw(0, 0);
+    ofPopMatrix();
+   }
+
 
   ofEnableLighting();
   // pointLight.enable();
@@ -771,27 +755,39 @@ void ofApp::drawScene() {
   }
    
    if(boxON == 1){
+     ofRotateX(boxRotX);
+     ofRotateY(boxRotY);
+     ofRotateZ(boxRotZ); 
+     ofScale(boxScale); 
+     box.setPosition(boxPosX, boxPosY, boxPosZ);
      box.draw();
    } 
 
    if(planeON == 1){
+     ofRotateX(planeRotX);
+     ofRotateY(planeRotY);
+     ofRotateZ(planeRotZ); 
+     ofScale(planeScale); 
+     box.setPosition(planePosX, planePosY, planePosZ);
      plane.draw();
    }
-
-   if(cylinderON== 1){
-     cylinder.draw();
-   }
    
-  if(icoON== 1){
-    icoSphere.draw();
+   if(icoON== 1){
+     ofRotateX(icoRotX);
+     ofRotateY(icoRotY);
+     ofRotateZ(icoRotZ); 
+     ofScale(icoScale); 
+     box.setPosition(icoPosX, icoPosY, icoPosZ);
+     icoSphere.draw();
   }
   
   if(sphereON== 1){
+    ofRotateX(sphRotX);
+    ofRotateY(sphRotY);
+    ofRotateZ(sphRotZ); 
+    ofScale(sphScale); 
+    box.setPosition(sphPosX, sphPosY, sphPosZ);
     sphere.draw();
-  }
-
-  if(coneON== 1){
-    cone.draw();
   }
 
   // multimodelos
@@ -982,10 +978,10 @@ void ofApp::executeScriptEvent(int &whichEditor) {
   
   ofLogNotice() << "Orbit: " << lineas[editor.getCurrentLine()];
 
-  if(texto[1] == "video" && texto[2] == "draw" && texto.size() == 4){ 
+  if(texto[1] == "video" && texto[2] == "draw"){ 
     //videoLC[ofToInt(texto[0])].close();
     string temp = "videos/" + texto[3];
-    //   videoPlayer[ofToInt(texto[0])].setPixelFormat(OF_PIXELS_RGBA);
+    videoPlayer[ofToInt(texto[0])].setPixelFormat(OF_PIXELS_RGBA);
     videoPlayer[ofToInt(texto[0])].setLoopState(OF_LOOP_NORMAL);
     videoPlayer[ofToInt(texto[0])].load(temp);    
     videoPlayer[ofToInt(texto[0])].play(); 
@@ -995,7 +991,7 @@ void ofApp::executeScriptEvent(int &whichEditor) {
     videoRotY[ofToInt(texto[0])] = 0;
     videoRotZ[ofToInt(texto[0])] = 0;
     videoOpacity[ofToInt(texto[0])] = 255;
-    vON = 1;
+    //vON = 1;
   }
 
  if(texto[1] == "video" && texto[2] == "close"){
@@ -1106,39 +1102,88 @@ void ofApp::executeScriptEvent(int &whichEditor) {
     if(texto[0] == "plane"){ 
       planeON = 1; 
     }
-    if(texto[0] == "cylinder"){ 
-      cylinderON = 1; 
-    }	
     if(texto[0] == "sphere"){ 
       sphereON = 1; 
     }
     if(texto[0] == "ico"){ 
       icoON = 1; 
     }
-    if(texto[0] == "cone"){ 
-      icoON = 1; 
-    }  
   }
 
-  if(texto[1] == "clear" && texto.size() == 2){
+  if(texto[1] == "draw" && texto.size() == 2){
     if(texto[0] == "box"){ 
-      boxON = 0; 
+      boxON = 1; 
     } 
     if(texto[0] == "plane"){ 
-      planeON = 0; 
+      planeON = 1; 
     }
-    if(texto[0] == "cylinder"){ 
-      cylinderON = 0; 
-    }	
     if(texto[0] == "sphere"){ 
-      sphereON = 0; 
+      sphereON = 1; 
     }
     if(texto[0] == "ico"){ 
-      icoON = 0; 
+      icoON = 1; 
     }
-    if(texto[0] == "cone"){ 
-      icoON = 0; 
-    }  
+  }
+  
+  if(texto[1] == "scale" && texto.size() == 2){
+    if(texto[0] == "box"){ 
+      boxScale = ofToInt(texto[2]);
+    } 
+    if(texto[0] == "plane"){ 
+       planeScale = ofToInt(texto[2]);
+    }	
+    if(texto[0] == "sphere"){ 
+      sphScale = ofToInt(texto[2]);
+    }
+    if(texto[0] == "ico"){ 
+      icoScale = ofToInt(texto[2]); 
+    }
+  }
+  
+  if(texto[1] == "rotate" && texto.size() == 6){
+    if(texto[0] == "box"){ 
+      boxRotX = ofToInt(texto[2]);
+      boxRotY = ofToInt(texto[3]);
+      boxRotZ = ofToInt(texto[4]);
+    } 
+    if(texto[0] == "plane"){
+      planeRotX = ofToInt(texto[2]);
+      planeRotY = ofToInt(texto[3]);
+      planeRotZ = ofToInt(texto[4]);
+    }	
+    if(texto[0] == "sphere"){
+      sphRotX = ofToInt(texto[2]);
+      sphRotY = ofToInt(texto[3]);
+      sphRotZ = ofToInt(texto[4]);
+    }
+    if(texto[0] == "ico"){
+      icoRotX = ofToInt(texto[2]);
+      icoRotY = ofToInt(texto[3]);
+      icoRotZ = ofToInt(texto[4]);      
+    }
+  }
+
+  if(texto[1] == "setPosition" && texto.size() == 6){
+    if(texto[0] == "box"){ 
+      boxPosX = ofToInt(texto[2]);
+      boxPosY = ofToInt(texto[3]);
+      boxPosZ = ofToInt(texto[4]);
+    } 
+    if(texto[0] == "plane"){
+      planePosX = ofToInt(texto[2]);
+      planePosY = ofToInt(texto[3]);
+      planePosZ = ofToInt(texto[4]);
+    }	
+    if(texto[0] == "sphere"){
+      sphPosX = ofToInt(texto[2]);
+      sphPosY = ofToInt(texto[3]);
+      sphPosZ = ofToInt(texto[4]);
+    }
+    if(texto[0] == "ico"){
+      icoPosX = ofToInt(texto[2]);
+      icoPosY = ofToInt(texto[3]);
+      icoPosZ = ofToInt(texto[4]);      
+    }
   } 
 
   if(texto[0] == "cam" && texto.size() == 4){
@@ -1205,7 +1250,6 @@ void ofApp::executeScriptEvent(int &whichEditor) {
     textureON = 1;
   }
  
-    
   // if you have some scripting language (e.g. ofxLua)
   // ofLogNotice() << "currentline " << currentLine;
 
@@ -1572,39 +1616,88 @@ void ofApp::evalReplEvent(const string &text) {
     if(texto[0] == "plane"){ 
       planeON = 1; 
     }
-    if(texto[0] == "cylinder"){ 
-      cylinderON = 1; 
-    }	
     if(texto[0] == "sphere"){ 
       sphereON = 1; 
     }
     if(texto[0] == "ico"){ 
       icoON = 1; 
     }
-    if(texto[0] == "cone"){ 
-      icoON = 1; 
-    }  
   }
 
-  if(texto[1] == "clear" && texto.size() == 2){
+  if(texto[1] == "draw" && texto.size() == 2){
     if(texto[0] == "box"){ 
-      boxON = 0; 
+      boxON = 1; 
     } 
     if(texto[0] == "plane"){ 
-      planeON = 0; 
+      planeON = 1; 
     }
-    if(texto[0] == "cylinder"){ 
-      cylinderON = 0; 
-    }	
     if(texto[0] == "sphere"){ 
-      sphereON = 0; 
+      sphereON = 1; 
     }
     if(texto[0] == "ico"){ 
-      icoON = 0; 
+      icoON = 1; 
     }
-    if(texto[0] == "cone"){ 
-      icoON = 0; 
-    }  
+  }
+  
+  if(texto[1] == "scale" && texto.size() == 2){
+    if(texto[0] == "box"){ 
+      boxScale = ofToInt(texto[2]);
+    } 
+    if(texto[0] == "plane"){ 
+       planeScale = ofToInt(texto[2]);
+    }	
+    if(texto[0] == "sphere"){ 
+      sphScale = ofToInt(texto[2]);
+    }
+    if(texto[0] == "ico"){ 
+      icoScale = ofToInt(texto[2]); 
+    }
+  }
+  
+  if(texto[1] == "rotate" && texto.size() == 6){
+    if(texto[0] == "box"){ 
+      boxRotX = ofToInt(texto[2]);
+      boxRotY = ofToInt(texto[3]);
+      boxRotZ = ofToInt(texto[4]);
+    } 
+    if(texto[0] == "plane"){
+      planeRotX = ofToInt(texto[2]);
+      planeRotY = ofToInt(texto[3]);
+      planeRotZ = ofToInt(texto[4]);
+    }	
+    if(texto[0] == "sphere"){
+      sphRotX = ofToInt(texto[2]);
+      sphRotY = ofToInt(texto[3]);
+      sphRotZ = ofToInt(texto[4]);
+    }
+    if(texto[0] == "ico"){
+      icoRotX = ofToInt(texto[2]);
+      icoRotY = ofToInt(texto[3]);
+      icoRotZ = ofToInt(texto[4]);      
+    }
+  }
+
+  if(texto[1] == "setPosition" && texto.size() == 6){
+    if(texto[0] == "box"){ 
+      boxPosX = ofToInt(texto[2]);
+      boxPosY = ofToInt(texto[3]);
+      boxPosZ = ofToInt(texto[4]);
+    } 
+    if(texto[0] == "plane"){
+      planePosX = ofToInt(texto[2]);
+      planePosY = ofToInt(texto[3]);
+      planePosZ = ofToInt(texto[4]);
+    }	
+    if(texto[0] == "sphere"){
+      sphPosX = ofToInt(texto[2]);
+      sphPosY = ofToInt(texto[3]);
+      sphPosZ = ofToInt(texto[4]);
+    }
+    if(texto[0] == "ico"){
+      icoPosX = ofToInt(texto[2]);
+      icoPosY = ofToInt(texto[3]);
+      icoPosZ = ofToInt(texto[4]);      
+    }
   } 
 
   if(texto[0] == "cam" && texto.size() == 4){

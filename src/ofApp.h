@@ -29,7 +29,6 @@ public:
   void evalReplEvent(const string &text);
   
   ofxGLEditor editor;
-
   int orbitON;
   
   std::vector<string> texto;
@@ -46,10 +45,50 @@ public:
   ofSpherePrimitive sphere;
   ofIcoSpherePrimitive icoSphere;
   ofPlanePrimitive plane;
-  ofCylinderPrimitive cylinder;
-  ofConePrimitive cone;
   ofBoxPrimitive box;
 
+  int sphereON;
+  int icoON;
+  int planeON;
+  int boxON;
+
+  int sphPosX;
+  int sphPosY;
+  int sphPosZ;
+
+  int icoPosX;
+  int icoPosY;
+  int icoPosZ;
+  
+  int planePosX;
+  int planePosY;
+  int planePosZ;
+  
+  int boxPosX;
+  int boxPosY;
+  int boxPosZ;
+
+  int sphRotX;
+  int sphRotY;
+  int sphRotZ;
+  
+  int planeRotX;
+  int planeRotY;
+  int planeRotZ;
+
+  int boxRotX;
+  int boxRotY;
+  int boxRotZ;
+  
+  int icoRotX;
+  int icoRotY;
+  int icoRotZ;
+
+  int planeScale;
+  int boxScale;
+  int icoScale;
+  int sphScale; 
+  
   ofColor colorLight2[LIM2];
 
   int clR[LIM2];
@@ -68,13 +107,6 @@ public:
   int drawLight[LIM2];
 
   int lightON; 
-
-  int sphereON;
-  int icoON;
-  int planeON;
-  int cylinderON;
-  int coneON;
-  int boxON;
 
   ofxHapPlayer videoLC[LIM];
 
@@ -185,6 +217,7 @@ public:
   
   float videoSpeed[LIM];
   int vON;
+
   ofColor colorB1;
   ofColor colorB2;
 

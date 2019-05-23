@@ -1,4 +1,10 @@
 // Orbit // 
 
+1 hvideo draw samplehap.mov
+
+1 hvideo close
+
+1 hvideo setPosition 500 100 100
+
 
 
