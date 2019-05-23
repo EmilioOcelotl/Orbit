@@ -99,7 +99,6 @@ public:
   int icoWire;
   int sphWire; 
 
-
   ofxHapPlayer hapTexPlayer[LIM]; 
   
   ofColor colorLight2[LIM2];

@@ -89,9 +89,19 @@ void ofApp::setup() {
 
     videoScaleX[i] = 1; 
     videoScaleY[i] = 1; 
-    videoScaleZ[i] = 1; 
+    videoScaleZ[i] = 1;
 	
   }
+
+  boxScale = 1;
+  sphScale = 1;
+  planeScale = 1;
+  icoScale = 1;
+
+  boxFaces= 1;
+  planeFaces = 1;
+  icoFaces = 1;
+  sphFaces = 1; 
 
   // multilight
 
@@ -352,16 +362,117 @@ void ofApp::update() {
     
     if (m.getAddress() == "/clear"  &&  m.getNumArgs() ==1 ){
       if(m.getArgAsString(0) == "box"){ 
-	boxON = 1; 
+	boxON = 0; 
       } 
       if(m.getArgAsString(0) == "plane"){ 
-	planeON = 1; 
+	planeON = 0; 
       }
       if(m.getArgAsString(0) == "sphere"){ 
-	sphereON = 1; 
+	sphereON = 0; 
       }
       if(m.getArgAsString(0) == "ico"){ 
-	icoON = 1; 
+	icoON = 0; 
+      }
+    }
+    
+    if (m.getAddress() == "/scale"  &&  m.getNumArgs() == 2 ){
+      if(m.getArgAsString(0) == "box"){ 
+	boxScale = m.getArgAsInt(1); 
+      } 
+      if(m.getArgAsString(0) == "plane"){ 
+	planeScale = m.getArgAsInt(1); 
+      }
+      if(m.getArgAsString(0) == "sphere"){ 
+	sphScale = m.getArgAsInt(1);  
+      }
+      if(m.getArgAsString(0) == "ico"){ 
+        icoScale = m.getArgAsInt(1);  
+      }
+    }
+    
+    if (m.getAddress() == "/faces"  &&  m.getNumArgs() ==1 ){
+      if(m.getArgAsString(0) == "box"){ 
+	//boxON = 0;
+	boxFaces = 1;
+	boxWire = 0; 
+      } 
+      if(m.getArgAsString(0) == "plane"){ 
+	planeFaces = 1;
+	planeWire = 0; 
+      }
+      if(m.getArgAsString(0) == "sphere"){ 
+	sphFaces = 1;
+	sphWire = 0;
+      }
+      if(m.getArgAsString(0) == "ico"){ 
+        icoFaces = 1;
+	icoWire = 0; 
+      }
+    }
+
+    if (m.getAddress() == "/wire"  &&  m.getNumArgs() ==1 ){
+      if(m.getArgAsString(0) == "box"){ 
+	//boxON = 0;
+	boxFaces = 0;
+	boxWire = 1; 
+      } 
+      if(m.getArgAsString(0) == "plane"){ 
+	planeFaces = 0;
+	planeWire = 1; 
+      }
+      if(m.getArgAsString(0) == "sphere"){ 
+	sphFaces = 0;
+	sphWire = 1;
+      }
+      if(m.getArgAsString(0) == "ico"){ 
+        icoFaces = 0;
+	icoWire = 1; 
+      }
+    } 
+
+    if (m.getAddress() == "/rotate"  &&  m.getNumArgs() ==4 ){
+      if(m.getArgAsString(0) == "box"){ 
+	boxRotX = m.getArgAsInt(1);
+	boxRotY = m.getArgAsInt(2);
+	boxRotZ = m.getArgAsInt(3);
+      } 
+      if(m.getArgAsString(0) == "plane"){ 
+	planeRotX = m.getArgAsInt(1);
+	planeRotY = m.getArgAsInt(2);
+	planeRotZ = m.getArgAsInt(3);
+      }
+      if(m.getArgAsString(0) == "sphere"){ 
+	sphRotX = m.getArgAsInt(1);
+	sphRotY = m.getArgAsInt(2);
+	sphRotZ = m.getArgAsInt(3);
+      }
+      if(m.getArgAsString(0) == "ico"){ 
+	icoRotX = m.getArgAsInt(1);
+	icoRotY = m.getArgAsInt(2);
+	icoRotZ = m.getArgAsInt(3);
+      }
+    }
+
+    if (m.getAddress() == "/setPosition"  &&  m.getNumArgs() ==4 ){
+      if(m.getArgAsString(0) == "box"){ 
+	boxPosX = m.getArgAsInt(1);
+	boxPosY = m.getArgAsInt(2);
+	boxPosZ = m.getArgAsInt(3);
+      } 
+      if(m.getArgAsString(0) == "plane"){ 
+	planePosX = m.getArgAsInt(1);
+	planePosY = m.getArgAsInt(2);
+	planePosZ = m.getArgAsInt(3);
+      }
+      if(m.getArgAsString(0) == "sphere"){ 
+	sphPosX = m.getArgAsInt(1);
+	sphPosY = m.getArgAsInt(2);
+	sphPosZ = m.getArgAsInt(3);
+      }
+      if(m.getArgAsString(0) == "ico"){ 
+	icoPosX = m.getArgAsInt(1);
+	icoPosY = m.getArgAsInt(2);
+	icoPosZ = m.getArgAsInt(3);
       }
     }
 
@@ -376,6 +487,33 @@ void ofApp::update() {
       orbitX = m.getArgAsFloat(0);
       orbitY = m.getArgAsFloat(1); 
     }
+
+    
+    if (m.getAddress() == "/camOrbitX"  &&  m.getNumArgs() ==1 ){
+      int n = m.getArgAsInt(0);
+      if(m.getArgAsInt(0) == 0 && m.getArgAsInt(1) == 0){
+	orbitON = 0; 
+      }
+      else{
+	orbitON = 1;
+      }
+      orbitX = m.getArgAsFloat(0);
+      //orbitY = m.getArgAsFloat(1); 
+    }
+
+      
+    if (m.getAddress() == "/camOrbitY"  &&  m.getNumArgs() ==1 ){
+      int n = m.getArgAsInt(0);
+      if(m.getArgAsInt(0) == 0 && m.getArgAsInt(1) == 0){
+	orbitON = 0; 
+      }
+      else{
+	orbitON = 1;
+      }
+      orbitY = m.getArgAsFloat(0);
+      //orbitY = m.getArgAsFloat(1); 
+    }
+
 
     if (m.getAddress() == "/camSetPosition"  &&  m.getNumArgs() ==3 ){
       camera.setPosition(m.getArgAsFloat(0), m.getArgAsFloat(1), m.getArgAsFloat(2));
@@ -414,6 +552,17 @@ void ofApp::update() {
       multiModelScale[m.getArgAsInt(0)] = m.getArgAsFloat(1);
     }
 
+    if(m.getAddress() == "/imgTex" && m.getNumArgs() == 2){
+      string temp = "img/" + m.getArgAsString(1);
+      ofDisableArbTex();
+      texturas[m.getArgAsInt(0)].generateMipmap();
+      texturas[m.getArgAsInt(0)].setTextureWrap(GL_REPEAT, GL_REPEAT);
+      texturas[m.getArgAsInt(0)].setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+      ofLoadImage(texturas[m.getArgAsInt(0)], temp);
+      videoTex = 0;
+      textureON = 1;
+    }
+
     if (m.getAddress() == "/mainLightColor" && m.getNumArgs() == 3){
       pointLight.setDiffuseColor(ofColor(m.getArgAsInt(0), m.getArgAsInt(1), m.getArgAsInt(2)));
       // specular color, the highlight/shininess color //
@@ -426,6 +575,10 @@ void ofApp::update() {
 
      if (m.getAddress() == "/mainLightEnable"){
        pointLight.enable();
+     }
+
+     if (m.getAddress() == "/materialSetShininess" && m.getNumArgs() == 1){
+       material.setShininess(m.getArgAsInt(0));
      }
      
      if (m.getAddress() == "/lightEnable" && m.getNumArgs() == 1){
@@ -471,6 +624,14 @@ void ofApp::update() {
      if (m.getAddress() == "/feedbackSetPosition" && m.getNumArgs() == 2){
        retroX = m.getArgAsFloat(0);
        retroY = m.getArgAsFloat(1);
+     }
+     
+     if (m.getAddress() == "/feedbackSetPositionX" && m.getNumArgs() == 1){
+       retroX = m.getArgAsFloat(0);
+     }
+     
+     if (m.getAddress() == "/feedbackSetPositionY" && m.getNumArgs() == 1){
+       retroY = m.getArgAsFloat(0);
      }
 
      if (m.getAddress() == "/glitchAllFalse"){
@@ -752,7 +913,7 @@ void ofApp::drawScene() {
   
    if(orbitON == 1){
      camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), ofVec3f(0, 0, 0));
-  }
+   }
    
    if(boxON == 1){
      ofRotateX(boxRotX);
@@ -760,7 +921,12 @@ void ofApp::drawScene() {
      ofRotateZ(boxRotZ); 
      ofScale(boxScale); 
      box.setPosition(boxPosX, boxPosY, boxPosZ);
-     box.draw();
+     if(boxFaces == 1){
+       box.draw();
+     }
+     if(boxWire == 1){
+       box.drawWireframe();
+     }
    } 
 
    if(planeON == 1){
@@ -768,8 +934,13 @@ void ofApp::drawScene() {
      ofRotateY(planeRotY);
      ofRotateZ(planeRotZ); 
      ofScale(planeScale); 
-     box.setPosition(planePosX, planePosY, planePosZ);
-     plane.draw();
+     plane.setPosition(planePosX, planePosY, planePosZ);
+     if(planeFaces == 1){
+       plane.draw();
+     }
+     if(planeWire == 1){
+       plane.drawWireframe();
+     }
    }
    
    if(icoON== 1){
@@ -777,8 +948,13 @@ void ofApp::drawScene() {
      ofRotateY(icoRotY);
      ofRotateZ(icoRotZ); 
      ofScale(icoScale); 
-     box.setPosition(icoPosX, icoPosY, icoPosZ);
-     icoSphere.draw();
+     icoSphere.setPosition(icoPosX, icoPosY, icoPosZ);
+     if(icoFaces == 1){
+       icoSphere.draw();
+     }
+     if(icoWire == 1){
+       icoSphere.drawWireframe();
+     }
   }
   
   if(sphereON== 1){
@@ -786,8 +962,14 @@ void ofApp::drawScene() {
     ofRotateY(sphRotY);
     ofRotateZ(sphRotZ); 
     ofScale(sphScale); 
-    box.setPosition(sphPosX, sphPosY, sphPosZ);
-    sphere.draw();
+    sphere.setPosition(sphPosX, sphPosY, sphPosZ);
+    if(sphFaces == 1){
+      sphere.draw();
+    }
+    if(sphWire == 1){
+      sphere.drawWireframe();
+    }
+
   }
 
   // multimodelos
@@ -810,8 +992,8 @@ void ofApp::drawScene() {
       
       if(videoTex == 1){
 	// aqui van los videos como texturas
-        //texture[i] = tempPlayer[i].getTexture();
-	//shader[i] = tempPlayer[i].getShader();
+        texture[i] = hapTexPlayer[i].getTexture();
+	shader[i] = hapTexPlayer[i].getShader();
       }
       
       ofPushMatrix();
@@ -1110,22 +1292,22 @@ void ofApp::executeScriptEvent(int &whichEditor) {
     }
   }
 
-  if(texto[1] == "draw" && texto.size() == 2){
+  if(texto[1] == "clear" && texto.size() == 2){
     if(texto[0] == "box"){ 
-      boxON = 1; 
+      boxON = 0; 
     } 
     if(texto[0] == "plane"){ 
-      planeON = 1; 
+      planeON = 0; 
     }
     if(texto[0] == "sphere"){ 
-      sphereON = 1; 
+      sphereON = 0; 
     }
     if(texto[0] == "ico"){ 
-      icoON = 1; 
+      icoON = 0; 
     }
   }
   
-  if(texto[1] == "scale" && texto.size() == 2){
+  if(texto[1] == "scale" && texto.size() == 3){
     if(texto[0] == "box"){ 
       boxScale = ofToInt(texto[2]);
     } 
@@ -1137,6 +1319,47 @@ void ofApp::executeScriptEvent(int &whichEditor) {
     }
     if(texto[0] == "ico"){ 
       icoScale = ofToInt(texto[2]); 
+    }
+  }
+  
+  if(texto[1] == "faces" && texto.size() == 2){
+    if(texto[0] == "box"){ 
+      boxFaces = 1;
+      boxWire = 0; 
+    } 
+    if(texto[0] == "plane"){ 
+      planeFaces = 1;
+      planeWire = 0; 
+    }	
+    if(texto[0] == "sphere"){ 
+      sphFaces = 1;
+      sphWire = 0; 
+    }
+    if(texto[0] == "ico"){ 
+      icoFaces = 1;
+      icoWire = 0; 
+    }
+  }
+
+  if(texto[1] == "wire" && texto.size() == 2){
+    if(texto[0] == "box"){ 
+      boxFaces = 0;
+      boxWire = 1; 
+    }
+    
+    if(texto[0] == "plane"){ 
+      planeFaces = 0;
+      planeWire = 1; 
+    }
+    
+    if(texto[0] == "sphere"){ 
+      sphFaces = 0;
+      sphWire = 1; 
+    }
+    
+    if(texto[0] == "ico"){ 
+      icoFaces = 0;
+      icoWire = 1; 
     }
   }
   
@@ -1624,18 +1847,18 @@ void ofApp::evalReplEvent(const string &text) {
     }
   }
 
-  if(texto[1] == "draw" && texto.size() == 2){
+  if(texto[1] == "clear" && texto.size() == 2){
     if(texto[0] == "box"){ 
-      boxON = 1; 
+      boxON = 0; 
     } 
     if(texto[0] == "plane"){ 
-      planeON = 1; 
+      planeON = 0; 
     }
     if(texto[0] == "sphere"){ 
-      sphereON = 1; 
+      sphereON = 0; 
     }
     if(texto[0] == "ico"){ 
-      icoON = 1; 
+      icoON = 0; 
     }
   }
   
