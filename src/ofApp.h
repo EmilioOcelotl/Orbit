@@ -99,7 +99,6 @@ public:
   int icoWire;
   int sphWire; 
 
-
   ofxHapPlayer hapTexPlayer[LIM]; 
   
   ofColor colorLight2[LIM2];
@@ -245,6 +244,22 @@ public:
   float msgRotY[LIM];
   float msgRotZ[LIM];
 
+  // cajas
+  
+  int boxes;
+  float dispboxX;
+  float dispboxY;
+  float dispboxZ;
+  int numbox;
+  float sizebox;
+
+  int stars;
+  int numstars;
+  float sizestars;
+  float dispstarsX;
+  float dispstarsY;
+  float dispstarsZ;
+  
   int multiMsg;
 
   ofxCenteredTrueTypeFont font;

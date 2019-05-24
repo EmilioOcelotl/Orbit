@@ -6,8 +6,22 @@ p.quant = 4;
 p.makeTempoClock((120/120));
 m = NetAddr("127.0.0.1", 5612); // para OpenFrameworks
 
-m.sendMsg("/draw", "box");
+m.sendMsg("/boxes", 1);
 m.sendMsg("/clear", "box");
+m.sendMsg("/mainLightDisable")
+m.sendMsg("/lightEnable", 2)
+m.sendMsg("/lightEnable", 1)
+
+m.sendMsg("/lightOscSpeed", 2, 2, 4, 8)
+m.sendMsg("/lightColor", 1, 255, 25, 255)
+
+
+m.sendMsg("/lightColor", 2, 25, 255, 255)
+
+m.sendMsg("/camLookAt", 100, 50, 10)
+
+m.sendMsg("/feedbackEnable")
+
 
 s.meter
 ~sin.play;

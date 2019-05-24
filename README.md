@@ -52,6 +52,8 @@ Para todos los casos, es necesario utilizar un [fork](https://github.com/bolkaaa
 
 Para linux es necesario entrar a la carpeta del proyecto y: 
 
+`cd of_v0.10.1_linux64gcc6_release/apps/myApps/Orbit`
+
 `make`
 
 `make RunRelease`

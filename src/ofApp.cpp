@@ -765,6 +765,48 @@ void ofApp::update() {
      if (m.getAddress() == "/backgroundGradientDisable" ){
        colorBackground = 0; 
      }
+
+     if (m.getAddress() == "/starsnum"  &&  m.getNumArgs() == 1){
+       numstars = m.getArgAsInt(0);
+     }
+     
+     if (m.getAddress() == "/starssize"  &&  m.getNumArgs() == 1){
+       sizestars = m.getArgAsInt(0);
+     }
+     
+     if (m.getAddress() == "/starsdisp"  &&  m.getNumArgs() == 1){
+       dispstarsX = m.getArgAsInt(0);
+       dispstarsY = m.getArgAsInt(0);
+       dispstarsZ = m.getArgAsInt(0);
+     }
+
+     if (m.getAddress() == "/boxes"  &&  m.getNumArgs() == 1){
+       boxes = m.getArgAsInt(0);
+       numbox = 50;
+       sizebox = 10;
+       dispboxX = 1000;
+       dispboxY = 1000;
+       dispboxZ = 1000;
+     }
+     
+     if (m.getAddress() == "/stars" &&  m.getNumArgs() == 1){
+       stars = m.getArgAsInt(0);
+     }
+
+     if (m.getAddress() == "/multimsgON" &&  m.getNumArgs() == 1){
+       multiMsg = m.getArgAsInt(0); 
+     }
+
+     if (m.getAddress() == "/multimsg"  &&  m.getNumArgs() == 7){
+       int n = m.getArgAsInt(0);
+       //multiMsg = 1;
+       noiseX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+       noiseY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
+       msgRotX[m.getArgAsInt(0)] = m.getArgAsFloat(3);
+       msgRotY[m.getArgAsInt(0)] = m.getArgAsFloat(4);
+       msgRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(5);
+       textOrb[m.getArgAsInt(0)] = m.getArgAsString(6);
+     }
   }
 }
   
@@ -891,7 +933,6 @@ void ofApp::drawScene() {
     ofPopMatrix();
    }
 
-
   ofEnableLighting();
   // pointLight.enable();
   //pointLight.draw();
@@ -914,11 +955,47 @@ void ofApp::drawScene() {
    if(orbitON == 1){
      camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), ofVec3f(0, 0, 0));
    }
+
+   // cubos
+
+   if(boxes == 1){
+     for (int i = 0;i < numbox;i++){
+       
+       ofBoxPrimitive boxx[numbox];
+       
+       ofPushMatrix();
+       material.begin();
+       //ofRotateZ(ofGetElapsedTimef()+10);
+       ofTranslate((ofNoise(i/1.2)-0.5)*dispboxX,
+		   (ofNoise(i/6.1)-0.5)*dispboxY,
+		   (ofNoise(i/4.2)-0.5)*dispboxZ);
+       boxx[i].set(40, 5, 5);
+       boxx[i].lookAt(camera.getPosition());
+       
+       boxx[i].draw();
+	    material.end();
+            ofPopMatrix();
+     }
+   }
+    
+   // estrellas puntos
    
-   if(boxON == 1){
-     ofRotateX(boxRotX);
-     ofRotateY(boxRotY);
-     ofRotateZ(boxRotZ); 
+    if(stars == 1){
+      for (int i = 0;i < numstars;i++){
+	ofPushMatrix();
+	//ofRotateZ(ofGetElapsedTimef()+10);
+	ofTranslate((ofNoise(i/2.4)-0.5)*dispstarsX,
+		    (ofNoise(i/5.6)-0.5)*dispstarsY,
+		    (ofNoise(i/8.2)-0.5)*dispstarsZ);
+	ofSphere(0, 0, (ofNoise(i/3.4)-0.1)*sizestars);
+	ofPopMatrix();
+      }
+    }
+   
+    if(boxON == 1){
+      ofRotateX(boxRotX);
+      ofRotateY(boxRotY);
+      ofRotateZ(boxRotZ); 
      ofScale(boxScale); 
      box.setPosition(boxPosX, boxPosY, boxPosZ);
      if(boxFaces == 1){
@@ -927,7 +1004,7 @@ void ofApp::drawScene() {
      if(boxWire == 1){
        box.drawWireframe();
      }
-   } 
+    } 
 
    if(planeON == 1){
      ofRotateX(planeRotX);
@@ -1698,6 +1775,53 @@ void ofApp::executeScriptEvent(int &whichEditor) {
      colorBackground =0; 
    }
 
+   if (texto[0] == "boxes"){
+     boxes = ofToInt(texto[1]);
+     numbox = 40;
+     sizebox = 10;
+     dispboxX = 1000;
+     dispboxY = 1000;
+     dispboxZ = 1000;
+   }
+
+   if (texto[0] == "boxesnum"){
+     numbox = ofToInt(texto[1]);
+   }
+   
+   if (texto[0] == "boxessize"){
+     sizebox = ofToFloat(texto[1]);
+   }
+   
+   if (texto[0] == "boxesdisp"){
+     dispboxX = ofToFloat(texto[1]);
+     dispboxY = ofToFloat(texto[1]);
+     dispboxZ = ofToFloat(texto[1]);
+   }
+
+   if(texto[0] == "stars"){
+     stars = ofToInt(texto[1]); 
+   }
+
+   if (texto[0] == "starsnum"){
+     numstars = ofToInt(texto[1]);
+   }
+   
+   if (texto[0] == "starssize"){
+     sizestars = ofToFloat(texto[1]);
+   }
+   
+   if (texto[0] == "starsdispxyz"){
+     dispstarsX = ofToFloat(texto[1]);
+     dispstarsY = ofToFloat(texto[2]);
+     dispstarsZ = ofToFloat(texto[3]);
+   }
+   
+   if (texto[0] == "starsdisp"){
+     dispstarsX = ofToInt(texto[1]);
+     dispstarsY = ofToInt(texto[1]);
+     dispstarsZ = ofToInt(texto[1]);
+   }
+   
 }
 
 //--------------------------------------------------------------
@@ -2212,6 +2336,4 @@ void ofApp::evalReplEvent(const string &text) {
    if(texto[0] == "backgroundGradient" && texto[1] == "disable"){
      colorBackground =0; 
    }
-
-
 }
