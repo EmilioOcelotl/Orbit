@@ -7,9 +7,11 @@
 #include "ofxPostGlitch.h"
 #include "ofxOsc.h"
 #include "ofxCenteredTrueTypeFont.h"
+#include "ofxDomemaster.h"
 
 #define LIM 10
 #define LIM2 3
+#define LIM3 36
 
 class ofApp : public ofBaseApp, public ofxGLEditorListener {
 
@@ -18,6 +20,8 @@ public:
   void update(); 
   void draw();
   void drawScene();
+  void drawBlur();
+  void drawFbo(); 
   
   void keyPressed(int key);
   void windowResized(int w, int h);
@@ -40,12 +44,26 @@ public:
   ofxEditorSyntax orbitSyntax;
   ofxEditorColorScheme colorScheme;
 
+  float blur;
+  int blurON;
+
+  ofFbo fboBlurOnePass;
+  ofFbo fboBlurTwoPass;
+  
+  ofShader shaderBlurX;
+  ofShader shaderBlurY;
+
+  int clearGB;  
+
   // Primitivos
   
   ofSpherePrimitive sphere;
   ofIcoSpherePrimitive icoSphere;
   ofPlanePrimitive plane;
   ofBoxPrimitive box;
+
+  ofxDomemaster domemaster;
+  int domeON;
 
   int sphereON;
   int icoON;
@@ -262,7 +280,14 @@ public:
   
   int multiMsg;
 
+  int multivideoSize;
+  
   ofxCenteredTrueTypeFont font;
+
+  ofxHapPlayer multivideos[LIM3];
+  int multivideoON;
+  string temp[LIM3];
+  ofPlanePrimitive multiplanos[LIM3];
 
   string wrapString(string text, int width) {
     

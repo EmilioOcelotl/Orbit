@@ -48,17 +48,21 @@ Para todos los casos, es necesario utilizar un [fork](https://github.com/bolkaaa
 
 [ofxPostGlitch](https://github.com/maxillacult/ofxPostGlitch)
 
+[ofxCenteredTrueTypeFont](https://github.com/armadillu/ofxCenteredTrueTypeFont)
+
+[ofxDomemaster](https://github.com/charlesveasey/ofxDomemaster)
+
 ### Compilación
 
 Para linux es necesario entrar a la carpeta del proyecto y: 
 
-`cd of_v0.10.1_linux64gcc6_release/apps/myApps/Orbit`
+`cd carpetaDeOpenFrameworks/apps/myApps/Orbit`
 
 `make`
 
 `make RunRelease`
 
-Para el caso de MacOS es necesario abrir el proyecto con XCode. 
+Para el caso de MacOS es necesario abrir el proyecto con XCode y pulsar el botón de compilar. 
 
 ### Indicaciones
 

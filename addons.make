@@ -4,3 +4,4 @@ ofxAssimpModelLoader
 ofxPostGlitch
 ofxOsc
 ofxCenteredTrueTypeFont
+ofxDomemaster

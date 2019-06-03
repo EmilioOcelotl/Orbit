@@ -18,12 +18,14 @@ m.sendMsg("/lightColor", 1, 255, 25, 255)
 
 m.sendMsg("/lightColor", 2, 25, 255, 255)
 
-m.sendMsg("/camLookAt", 200,100, 50)
+m.sendMsg("/camLookAt", 100,0, 0)
 
-m.sendMsg("/feedbackEnable")
+m.sendMsg("/feedbackDisable")
 
 m.sendMsg("/multimsgON", 1)
 m.sendMsg("/stars", 1)
+m.sendMsg("/domemaster", 0)
+
 
 m.sendMsg("/modelLoad", 1, "bicho2.obj")
 
@@ -44,9 +46,9 @@ OSCdef(\orbitX, {|msg|
 
 ~orbitXSend = {SendReply.kr(Impulse.kr(30), '/orbitXDef', ~orbitX.kr)};
 
-~orbitX = {Demand.kr(Impulse.kr(~tempo*0.5), 0, Dseq([13, -27, 55, 110, -160, -400, 400] * 0.25,inf))};
+~orbitX = {Demand.kr(Impulse.kr(~tempo*2), 0, Dseq([13, -27, 55, 110, -160, -400, 400] * 1,inf))};
 
-OSCdef(\glitchSlitscan).free;
+OSCdef(\orbitX).free;
 
 
 (
@@ -58,8 +60,11 @@ OSCdef(\camDistance, {|msg|
 
 ~camDistanceSend = {SendReply.kr(Impulse.kr(30), '/camDistanceDef', ~camDistance.kr)};
 
-~camDistance = {Lag.kr(Demand.kr(Impulse.kr(~tempo*1), 0, Dseq([100, 5000],inf)), 4)}
+~camDistance = {Lag.kr(Demand.kr(Impulse.kr(~tempo*1), 0, Dseq([10, 500],inf)), 4)}
 ;
+
+OSCdef(\camDistance).free;
+
 
 (
 OSCdef(\orbitY, {|msg|
@@ -70,7 +75,10 @@ OSCdef(\orbitY, {|msg|
 
 ~orbitYSend = {SendReply.kr(Impulse.kr(30), '/orbitYDef', ~orbitY.kr)};
 
-~orbitY = {Demand.kr(Impulse.kr(~tempo*0.25), 0, Dseq([13, -27, 55, 110, -160, 200, -200],inf))};
+~orbitY = {Demand.kr(Impulse.kr(~tempo*4), 0, Dseq([13, -27, 55, 110, -160, 200, -200]*0.25,inf))};
+
+
+OSCdef(\orbitY).free;
 
 //OSCdef(\glitch2).free;
 
@@ -85,9 +93,9 @@ OSCdef(\fbX, {|msg|
 
 ~fbXSend = {SendReply.kr(Impulse.kr(60), '/fbXDef', ~fbX.kr)};
 
-~fbX = {Demand.kr(Impulse.kr(~tempo*2), 0, Dseq([40, -40, 20, -20, 0, 100, -100]*2,inf))};
+~fbX = {Demand.kr(Impulse.kr(~tempo*0.125), 0, Dseq([40, -40, 20, -20, 0, 100, -100]*2,inf))};
 
-~fbX = {Lag.kr(Demand.kr(Impulse.kr(~tempo*0.25), 0, Drand([40, -40, 20, -20, 0, 100, -100]*1,inf)), 1)};
+~fbX = {Lag.kr(Demand.kr(Impulse.kr(~tempo*1), 0, Drand([40, -40, 20, -20, 0, 100, -100]*0.5,inf)), 1)};
 
 
 (
@@ -99,9 +107,9 @@ OSCdef(\fbY, {|msg|
 
 ~fbYSend = {SendReply.kr(Impulse.kr(60), '/fbYDef', ~fbY.kr)};
 
-~fbY = {Demand.kr(Impulse.kr(~tempo*0.5), 0, Dseq([40, -40, 20, -20, 0, 100, -100]*1,inf))};
+~fbY = {Demand.kr(Impulse.kr(~tempo*0.125), 0, Dseq([40, -40, 20, -20, 0, 100, -100]*1,inf))};
 
-~fbY = {Lag.kr(Demand.kr(Impulse.kr(~tempo*1), 0, Dseq([40, -40, 20, -20, 0, 100, -100]*1,inf)), 4)};
+~fbY = {Lag.kr(Demand.kr(Impulse.kr(~tempo*1), 0, Dseq([40, -40, 20, -20, 0, 100, -100]*2,inf)), 4)};
 
 s.quit
 
@@ -114,7 +122,7 @@ OSCdef(\glitchCon, {|msg|
 
 ~glitchConSend = {SendReply.kr(Impulse.kr(60), '/glitchConDef', ~glitchCon.kr)};
 
-~glitchCon = {Demand.kr(Impulse.kr(~tempo*1), 0, Dseq([1, 1],inf))};
+~glitchCon = {Demand.kr(Impulse.kr(~tempo*8), 0, Dseq([1, 0],inf))};
 
 (
 OSCdef(\glitchSlitscan, {|msg|

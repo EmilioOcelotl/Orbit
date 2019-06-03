@@ -8,9 +8,9 @@ void ofApp::setup() {
   ofEnableAntiAliasing();
   ofSetWindowTitle("Orbit");
 
-  ofSetFrameRate(30);
+  ofSetFrameRate(60);
   ofBackground(0);
-  
+ 
   ofSetLogLevel("ofxGLEditor", OF_LOG_VERBOSE);	
   ofxEditor::loadFont("fonts/PrintChar21.ttf", 24);
   ofxRepl::setReplBanner("Orbit Repl");
@@ -53,10 +53,24 @@ void ofApp::setup() {
   pointLight.setSpecularColor( ofColor(255.f, 255.f, 255.f));
   material.setShininess( 128 );
 
+  // stars
+
+  numstars = 100;
+  sizestars = 1;
+  dispstarsX = 1000;
+  dispstarsY = 1000;
+  dispstarsZ = 1000;
+
   // revisar el brillo 
   
   pointLight.setPosition(camera.getPosition());
   material.setSpecularColor(materialColor);
+
+  // domemaster
+
+  domemaster.setup();
+  domemaster.setCameraPosition(0, 0, 5);
+  domeON = 0;
   
   for(int i = 0; i < LIM; i++){
 
@@ -124,8 +138,8 @@ void ofApp::setup() {
   
   pointLight.enable();
 
-   fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
-  //fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB32F_ARB); // activar 
+  //fbo.allocate(ofGetWidth()*2, ofGetHeight()*2, GL_RGB );
+  fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB32F_ARB); // activar 
   myGlitch.setup(&fbo);
   convergence = false;
   glow = false;
@@ -160,11 +174,45 @@ void ofApp::setup() {
   shader.load("shaders_gl3/noise.vert", "shaders_gl3/noise.frag");
   }else{
     shader.load("shaders/noise.vert", "shaders/noise.frag");
-    }
-    #endif
-
+  }
+#endif
+  
   shaderName = "noise";
+
+#ifdef TARGET_OPENGLES
+  shaderBlurX.load("shadersES2/shaderBlurX");
+  shaderBlurY.load("shadersES2/shaderBlurY");
+#else
+  if(ofIsGLProgrammableRenderer()){
+    shaderBlurX.load("shadersGL3/shaderBlurX");
+    shaderBlurY.load("shadersGL3/shaderBlurY");
+  }else{
+    shaderBlurX.load("shadersGL2/shaderBlurX");
+    shaderBlurY.load("shadersGL2/shaderBlurY");
+  }
+#endif
+
+  fboBlurOnePass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA );
+  fboBlurTwoPass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA );
+  // blur = 0;
+  blurON = 0;
+  clearGB = 0;
+  multivideoSize = 40; 
+  
   reciever.setup(5612);
+
+  /*
+   for (int i = 0;i < LIM3;i++){
+      
+    temp[i] = "hvideos/" + (ofToString(i+1)) + "_2.mov";
+    multivideos[i].load(temp[i]);
+    multivideos[i].play(); 
+    multiplanos[i].set(multivideoSize, multivideoSize);
+//    multiplanos[i].set(200, 200, 200);
+  }
+  */
+
+   multivideoON = 0; 
 
 }
 
@@ -196,9 +244,14 @@ void ofApp::update() {
   screenImage.loadScreenData(0,0,ofGetWidth(), ofGetHeight());
   }
 
-  if(glitchON == 1){
+
+//  if(glitchON == 1 && domeON == 0){
     drawScene();
-  }
+ // }
+
+ // if(domeON == 1 && glitchON == 1){
+ //   drawScene();
+ // }
 
   while (reciever.hasWaitingMessages()){
         
@@ -807,6 +860,43 @@ void ofApp::update() {
        msgRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(5);
        textOrb[m.getArgAsInt(0)] = m.getArgAsString(6);
      }
+
+     if(m.getAddress() == "/imgTexClear" && m.getNumArgs() == 1){
+       texturas[m.getArgAsInt(0)].clear(); 
+     }
+   
+     if(m.getAddress() == "/imgTexAllClear"){
+       textureON = 0;  
+     }
+     
+     if(m.getAddress() == "/blurEnable"){
+       blurON = 1; 
+     }
+
+     if(m.getAddress() == "/blurDisable"){
+       blurON = 0;
+     }
+
+     //if(texto[0] == "blurAmount" && m.getNumArgs() == 1){
+     // blur = m.getArgAsFloat(0); 
+     //}
+
+     if (m.getAddress() == "/camDistance" ){
+       camdistance = m.getArgAsInt(0);
+       camera.setDistance(camdistance);
+     }
+
+     if(m.getAddress() == "/domemaster"){
+       domeON = m.getArgAsInt(0);
+     }
+
+     if(m.getAddress() == "/multivideo"){
+       multivideoON = m.getArgAsInt(0);
+     }
+
+     if(m.getAddress() == "/multivideoSize"){
+       multivideoSize = m.getArgAsInt(0); 
+     }
   }
 }
   
@@ -847,26 +937,141 @@ void ofApp::draw() {
     shaderFbo.draw(0, 0); 
   }
   */
-  
-  if(glitchON == 1){
-    fbo.draw(0, 0);
-  }
 
-  if(glitchON == 0){
-  drawScene(); 
+  if(domeON == 0){
+    if(blurON == 1 && glitchON == 1){
+      drawBlur();
+    }
+    if(blurON == 1 && glitchON == 0){
+      drawBlur();
+    }
+    if(blurON == 0 && glitchON == 1){
+      fbo.draw(0, 0);
+    }
+    if(blurON == 0 && glitchON == 0){
+//	ofScale(0.5); 
+      fbo.draw(0, 0); 
+    }
   }
+ 
+  if(domeON == 1){
+    for (int i=0; i<domemaster.renderCount; i++){
+      domemaster.begin(i);
+      drawFbo();
+      domemaster.end(i);
+    }
+    domemaster.draw();
+  }
+}
+
+void ofApp::drawBlur(){
+    
+  ofEnableAlphaBlending();
+  
+  //float blur = ofMap(mouseX, 0, ofGetWidth(), 0, 10, true);
+  
+  fboBlurOnePass.begin();
+  shaderBlurX.begin();
+  
+    
+  if(clearGB == 0){
+    //ofFill(); 
+    //ofSetColor(255,255,255, 14);
+    //ofDrawRectangle(0,0,800,800);
+    //ofNoFill(); 
+    ofSetColor(255, 255, 255); 
+  }
+  if(clearGB == 1){
+    ofClear(0);
+  }
+  
+  shaderBlurX.setUniform1f("blurAmnt", blur);
+  fbo.draw(0, 0);
+  shaderBlurX.end();
+  fboBlurOnePass.end();
+  
+  fboBlurTwoPass.begin();
+  shaderBlurY.begin();
+    
+  if(clearGB == 0){
+    //ofFill(); 
+    ofSetColor(255,255,255);
+    //ofDrawRectangle(0,0,800,800);
+    //ofNoFill(); 
+    //ofSetColor(255, 255, 255);
+  }
+  if(clearGB == 1){
+    ofClear(0);
+  }
+  
+  shaderBlurY.setUniform1f("blurAmnt", blur);
+  fboBlurOnePass.draw(0, 0);
+  shaderBlurY.end();
+  fboBlurTwoPass.end();
+  fboBlurTwoPass.draw(0, 0);
   
 }
 
+void ofApp::drawFbo(){
+    
+    ofSetRectMode(OF_RECTMODE_CENTER);
+    ofDisableAlphaBlending();
+    ofScale(0.125/8, 0.125/8);
+    ofTranslate(0, 0, 0);
+    ofRotateX(180);
+    
+    //fbo.getTexture().bind();
+    //plane.draw();
+    //fbo.getTexture().unbind();
+    
+    if(blurON == 1){
+      fboBlurTwoPass.draw(0, 0);
+    }
+    
+    if(blurON == 0){
+      fbo.draw(0, 0);
+    }
+    
+}
+
+
 //--------------------------------------------------------------
 void ofApp::drawScene() {
+
   
+  auto campos = camera.getGlobalPosition();
   ofRectangle rect;
-  
-  if(glitchON == 1){
-  fbo.begin();
-  ofClear(0);
-  }
+  ofDisableDepthTest();
+  ofEnableAlphaBlending();
+
+  //if(domeON == 1){
+    fbo.begin();
+    ofClear(0);
+  //}
+  /*
+  if(glitchON == 1 && blurON == 0 ){
+    fbo.begin();
+    ofClear(0);
+  };
+
+  if(glitchON == 0 && blurON == 1 ){
+    fbo.begin();
+    ofClear(0);
+  };
+
+  if(glitchON == 1 && blurON == 1 ){
+    fbo.begin();
+    ofClear(0);
+  };
+  */
+  //  ofFill(); 
+  //  ofSetColor(255,255,255, 10);
+  //  ofDrawRectangle(0,0,ofGetWidth(),ofGetHeight());
+    //ofNoFill(); 
+    //ofSetColor(255, 255, 255); 
+  //ofClear(0);
+  //}
+    
 
   if(glitchON == 0 && colorBackground == 1){
     ofBackgroundGradient(colorB1, colorB2 , OF_GRADIENT_LINEAR);
@@ -900,14 +1105,17 @@ void ofApp::drawScene() {
     screenImage.draw(retroX+ofGetWidth()/2, retroY+ofGetHeight()/2, ofGetWidth()-160, ofGetHeight()-160);
   }
 
-  ofEnableDepthTest(); 
-
   camera.begin();
 
+  
+  ofEnableDepthTest(); // esto lo desactivé, no sé si tenga consecuencias pero depende de fbotrials
+
+  
   ofDisableLighting(); 
   //pointLight.disable(); 
   //if(videoON == 1){
-  for(int i = 0; i < LIM; i++){      
+  for(int i = 0; i < LIM; i++){
+    //videoLC[i].lookAt(camera.getPosition());
     //ofEnableAlphaBlending();
     ofPushMatrix(); 
     ofRotateX(vRotX[i]);
@@ -933,6 +1141,39 @@ void ofApp::drawScene() {
     ofPopMatrix();
    }
 
+  /*
+ if(multivideoON == 1){
+    
+    for (int i = 0;i < LIM3;i++){
+      ofSetColor(255, 255, 255, 150); 
+	multiplanos[i].lookAt(campos, {0.f, 1.f, 0.f});
+	ofTexture *texture[i] = {0};
+	ofShader *shader[i] = {0};
+	texture[i] = multivideos[i].getTexture();
+	shader[i] = multivideos[i].getShader();
+	
+	if (shader[i])
+	  {
+	  shader[i]->begin();
+	  }
+	
+	texture[i]->bind();
+	multiplanos[i].draw();
+	texture[i]->unbind();
+      
+	if (shader[i])
+	  {
+	    shader[i]->end();
+	  }
+
+	multiplanos[i].setPosition((ofNoise(i/2.4)-0.5)*1000, (ofNoise(i/5.6)-0.5)*1000, (ofNoise(i/8.2)-0.5)*1000);
+	multiplanos[i].lookAt(ofVec3f(200, 200, 200), {0.f,1.f,0.f});
+	
+    }
+    
+ }
+ */
+  
   ofEnableLighting();
   // pointLight.enable();
   //pointLight.draw();
@@ -959,11 +1200,12 @@ void ofApp::drawScene() {
    // cubos
 
    if(boxes == 1){
-     for (int i = 0;i < numbox;i++){
-       
+
+     for (int i = 0;i < numbox;i++){   
        ofBoxPrimitive boxx[numbox];
-       
        ofPushMatrix();
+       
+      
        material.begin();
        //ofRotateZ(ofGetElapsedTimef()+10);
        ofTranslate((ofNoise(i/1.2)-0.5)*dispboxX,
@@ -973,8 +1215,8 @@ void ofApp::drawScene() {
        boxx[i].lookAt(camera.getPosition());
        
        boxx[i].draw();
-	    material.end();
-            ofPopMatrix();
+       material.end();
+       ofPopMatrix();
      }
    }
     
@@ -1046,34 +1288,34 @@ void ofApp::drawScene() {
     if(sphWire == 1){
       sphere.drawWireframe();
     }
-
   }
 
   // multimodelos
     
     for(int i = 0; i < LIM; i++){
 
-      #ifdef TARGET_LINUX
-
+     	
+#ifdef TARGET_LINUX
+	
       ofTexture *texture[i] = {0};
       ofShader *shader[i] = {0};
+	
+#endif
 
-      #endif
-
-      #ifdef TARGET_OSX
-      
+#ifdef TARGET_OSX
+	
       ofTexture *texture[i];
       ofShader *shader[i];
-
-      #endif
-      
+	
+#endif
       if(videoTex == 1){
+ 
 	// aqui van los videos como texturas
         texture[i] = hapTexPlayer[i].getTexture();
 	shader[i] = hapTexPlayer[i].getShader();
       }
       
-      ofPushMatrix();
+	ofPushMatrix();
       
       ofRotateX(multiModelRotX[i]);
       ofRotateY(multiModelRotY[i]);
@@ -1090,13 +1332,16 @@ void ofApp::drawScene() {
 	if (shader[i]){
 	  shader[i]->begin();
 	}
-	texture[i]->bind();
+
+	//if(videoTex==1){
+	  texture[i]->bind();
       }
-        
+
       multiModel[i].drawFaces();
                 
       if(videoTex == 1){
 	texture[i] -> unbind();
+	//}
 	if (shader[i]){
 	  shader[i]->end();
 	}
@@ -1138,8 +1383,8 @@ void ofApp::drawScene() {
   ofDisableDepthTest();
   ofDisableLighting();
 
-if(shaderON == 1){
-   shader.end();
+  if(shaderON == 1){
+    shader.end();
   }
   
   editor.draw();
@@ -1147,11 +1392,23 @@ if(shaderON == 1){
   if(retro == 1){
     screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());
   }
-
-  if(glitchON == 1){
+  
+  //if(glitchON == 1 && blurON == 0){
+    fbo.end(); 
+  //}
+/*
+  if(glitchON == 0 && blurON == 1){
     fbo.end(); 
   }
-   
+
+  if(glitchON == 1 && blurON == 1){
+    fbo.end(); 
+  }
+
+  if(domeON == 1){
+    fbo.end();
+  }
+  */ 
   // draw current editor info using the same font as the editor
   if(!editor.isHidden() && editor.getCurrentEditor() > 0) {
     
@@ -1549,6 +1806,14 @@ void ofApp::executeScriptEvent(int &whichEditor) {
     videoTex = 0;
     textureON = 1;
   }
+
+  if(texto[1] == "imgTexClear"){
+    texturas[ofToInt(texto[0])].clear(); 
+  }
+  
+  if(texto[1] == "imgTexAllClear"){
+    textureON = 0;  
+  }
  
   // if you have some scripting language (e.g. ofxLua)
   // ofLogNotice() << "currentline " << currentLine;
@@ -1604,7 +1869,7 @@ void ofApp::executeScriptEvent(int &whichEditor) {
   }
 
    if(texto[0] == "feedback" && texto[1] == "enable"){
-     retro = 1; 
+     retro = 1;
    }
 
    if(texto[0] == "feedback" && texto[1] == "disable"){
@@ -1821,6 +2086,50 @@ void ofApp::executeScriptEvent(int &whichEditor) {
      dispstarsY = ofToInt(texto[1]);
      dispstarsZ = ofToInt(texto[1]);
    }
+
+   if(texto[0] == "dome"){
+     domeON = ofToInt(texto[1]); 
+   }
+
+   if(texto[0] == "blur" && texto[1] == "enable"){
+     blurON = 1;
+     clearGB = 0; 
+   }
+
+   if(texto[0] == "blur" && texto[1] == "disable"){
+     blurON = 0;
+     clearGB = 1; 
+   }
+
+   if(texto[0] == "blur" && texto[1] == "clear"){
+     clearGB = 1; 
+   }
+
+   if(texto[0] == "blur" && texto[1] == "amount"){
+     blur = ofToInt(texto[2]); 
+   }
+
+   if (texto[0] == "vTex"){
+     string temp = "hvideos/" + texto[1];
+     videoTex = 1;
+     textureON = 0;
+     //            tempPlayer[ofToInt(textAnalisis[1])].setPixelFormat(OF_PIXELS_RGBA);
+     //hapTexPlayer[ofToInt(textAnalisis[1])].setLoopState(OF_LOOP_NORMAL);
+     hapTexPlayer[ofToInt(texto[2])].load(temp);
+     hapTexPlayer[ofToInt(texto[2])].play();
+   }
+
+   if(texto[1] == "vTexClear"){
+     hapTexPlayer[ofToInt(texto[0])].close(); 
+   }
+   
+   if(texto[1] == "vTexAllClear"){
+     textureON = 0;
+     for (int i = 0;i < LIM;i++){
+       hapTexPlayer[i].close(); 
+     }
+   }
+   
    
 }
 
@@ -2335,5 +2644,25 @@ void ofApp::evalReplEvent(const string &text) {
 
    if(texto[0] == "backgroundGradient" && texto[1] == "disable"){
      colorBackground =0; 
+   }
+
+   if(texto[1] == "imgTexClear"){
+     texturas[ofToInt(texto[0])].clear(); 
+   }
+   
+   if(texto[1] == "imgTexAllClear"){
+     textureON = 0;  
+   }
+
+   if(texto[0] == "blur" && texto[1] == "enable"){
+     blurON = 1; 
+   }
+
+   if(texto[0] == "blur" && texto[1] == "disable"){
+     blurON = 0;
+   }
+
+   if(texto[0] == "blur" && texto[1] == "amount"){
+     blur = ofToInt(texto[2]);
    }
 }

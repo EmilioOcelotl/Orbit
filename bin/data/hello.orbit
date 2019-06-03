@@ -6,5 +6,10 @@
 
 1 hvideo setPosition 500 100 100
 
+boxes 1
 
+cam orbit 34 4
+
+dome 1
+dome 0
 
